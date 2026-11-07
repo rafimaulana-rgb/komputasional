@@ -107,7 +107,7 @@
                     Pantau Sisa Tiket Platform Lain <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-emerald-300 to-accent-gold">Secara Real-Time.</span>
                 </h1>
                 <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
-                    Sistem otomatis mengecek sisa ketersediaan tiket dari <b>Traveloka, Tiket.com, RedBus, Pegipegi, & KAI Access</b>. Jika stok tersedia, Anda bisa langsung mengklik link untuk memesan di platform terkait.
+                    Sistem otomatis mengecek sisa ketersediaan tiket dari <b>Traveloka, Tiket.com, RedBus, Pegipegi, & KAI Access</b>. Klik nama armada untuk langsung menuju link pemesanan.
                 </p>
             </div>
         </div>
@@ -134,36 +134,94 @@
             <!-- Form Controls -->
             <form id="search-form" onsubmit="event.preventDefault(); renderTickets();" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
                 
-                <div class="lg:col-span-4 space-y-1.5">
+                <!-- Tanggal Perjalanan & Hari (Format Sesuai Web Booking) -->
+                <div class="lg:col-span-5 space-y-1.5">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tanggal Perjalanan</label>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <div class="relative flex-grow">
+                            <i class="fa-regular fa-calendar-days absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-500"></i>
+                            <input type="date" id="travel-date" onchange="handleDateChange()" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-xs text-white font-medium focus:outline-none focus:border-brand-500 transition [color-scheme:dark]">
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" onclick="setDatePreset(0)" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold px-3 py-2.5 rounded-xl transition">Hari ini</button>
+                            <button type="button" onclick="setDatePreset(1)" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold px-3 py-2.5 rounded-xl transition">Besok</button>
+                        </div>
+                    </div>
+                    <!-- Display Hari & Tanggal Lengkap Format Bahasa Indonesia -->
+                    <div id="formatted-date-badge" class="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg mt-1">
+                        <i class="fa-solid fa-calendar-check"></i>
+                        <span id="date-display-text">--</span>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-3.5 space-y-1.5">
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kota Keberangkatan</label>
                     <div class="relative">
                         <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-brand-500"></i>
-                        <select id="origin-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white font-medium focus:outline-none focus:border-brand-500 transition">
+                        <select id="origin-select" onchange="renderTickets()" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-11 pr-4 py-2.5 text-sm text-white font-medium focus:outline-none focus:border-brand-500 transition">
                             <option value="all">Semua Kota Asal</option>
                             <option value="Jakarta">Jakarta (Semua Terminal/Stasiun)</option>
                             <option value="Bandung">Bandung</option>
                             <option value="Surabaya">Surabaya</option>
                             <option value="Semarang">Semarang</option>
+                            <option value="Tasikmalaya">Tasikmalaya</option>
+                            <option value="Yogyakarta">Yogyakarta</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="lg:col-span-4 space-y-1.5">
+                <div class="lg:col-span-3.5 space-y-1.5">
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kota Tujuan</label>
                     <div class="relative">
                         <i class="fa-solid fa-flag absolute left-4 top-1/2 -translate-y-1/2 text-accent-gold"></i>
-                        <select id="dest-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white font-medium focus:outline-none focus:border-brand-500 transition">
+                        <select id="dest-select" onchange="renderTickets()" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-11 pr-4 py-2.5 text-sm text-white font-medium focus:outline-none focus:border-brand-500 transition">
                             <option value="all">Semua Kota Tujuan</option>
                             <option value="Yogyakarta">Yogyakarta / Solo</option>
                             <option value="Surabaya">Surabaya</option>
                             <option value="Semarang">Semarang / Kudus</option>
                             <option value="Malang">Malang</option>
+                            <option value="Jakarta">Jakarta / Tangerang</option>
+                            <option value="Bandung">Bandung</option>
                         </select>
                     </div>
                 </div>
 
+                <!-- Rentang Jam Keberangkatan Button Filters (Visual Cards) -->
+                <div class="lg:col-span-12 space-y-2 pt-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Filter Jam Keberangkatan (Status Stok Terkini)</label>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                        <button type="button" onclick="selectTimeFilter('all')" id="btn-time-all" class="time-filter-btn active bg-brand-600 text-white border border-brand-500 p-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition">
+                            <span><i class="fa-solid fa-clock mr-1"></i> Semua Jam</span>
+                            <span id="cnt-all" class="bg-brand-800/80 text-white px-2 py-0.5 rounded-md text-[10px]">(0)</span>
+                        </button>
+                        <button type="button" onclick="selectTimeFilter('06:00-12:00')" id="btn-time-1" class="time-filter-btn bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 p-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition">
+                            <span><i class="fa-regular fa-sun text-amber-400 mr-1"></i> 06:00-12:00</span>
+                            <span id="cnt-1" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md text-[10px]">(0)</span>
+                        </button>
+                        <button type="button" onclick="selectTimeFilter('12:00-18:00')" id="btn-time-2" class="time-filter-btn bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 p-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition">
+                            <span><i class="fa-solid fa-sun text-amber-500 mr-1"></i> 12:00-18:00</span>
+                            <span id="cnt-2" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md text-[10px]">(0)</span>
+                        </button>
+                        <button type="button" onclick="selectTimeFilter('18:00-24:00')" id="btn-time-3" class="time-filter-btn bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 p-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition">
+                            <span><i class="fa-solid fa-cloud-moon text-indigo-400 mr-1"></i> 18:00-24:00</span>
+                            <span id="cnt-3" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md text-[10px]">(0)</span>
+                        </button>
+                        <button type="button" onclick="selectTimeFilter('00:00-06:00')" id="btn-time-4" class="time-filter-btn bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 p-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition">
+                            <span><i class="fa-solid fa-moon text-blue-400 mr-1"></i> 00:00-06:00</span>
+                            <span id="cnt-4" class="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md text-[10px]">(0)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Pencarian PO Bus & Filter Status -->
+                <div class="lg:col-span-8 space-y-1.5">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                        <input type="text" id="bus-search" oninput="renderTickets()" placeholder="Cari berdasarkan PO / Bus (contoh: Sinar Jaya, Rosalia Indah, Juragan 99, 27 Trans)..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-500 transition">
+                    </div>
+                </div>
+
                 <div class="lg:col-span-4 space-y-1.5">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Filter Status Stok</label>
                     <div class="relative">
                         <i class="fa-solid fa-filter absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                         <select id="status-select" onchange="renderTickets()" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white font-medium focus:outline-none focus:border-brand-500 transition">
@@ -175,6 +233,19 @@
                 </div>
 
             </form>
+
+            <!-- RINGKASAN BUS TERSEDIA UNTUK RUTE YANG DIPILIH -->
+            <div id="route-summary-box" class="bg-brand-950/60 border border-brand-800/60 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-brand-400"><i class="fa-solid fa-bus text-amber-500 mr-1"></i> Rangkuman Bus Tersedia di Rute Ini:</span>
+                    </div>
+                    <div id="available-bus-tags" class="flex flex-wrap gap-1.5">
+                        <!-- Dynamic Tags -->
+                    </div>
+                </div>
+            </div>
+
         </section>
 
         <!-- LIVE TICKET MONITORING RESULTS -->
@@ -214,32 +285,81 @@
 
     <!-- REAL-TIME JAVASCRIPT LOGIC -->
     <script>
-        // Database Simulasi Platform Luar (Real-Time Dynamic Data)
+        // Array nama hari & bulan dalam Bahasa Indonesia
+        const daysIndo = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+        const monthsIndo = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agust", "Sep", "Okt", "Nov", "Des"];
+
+        function updateDateDisplay() {
+            const dateVal = document.getElementById('travel-date').value;
+            if (!dateVal) return;
+
+            const parts = dateVal.split('-');
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
+            
+            const selectedDate = new Date(year, month, day);
+            const dayName = daysIndo[selectedDate.getDay()];
+            const monthName = monthsIndo[selectedDate.getMonth()];
+            
+            // Format seperti screenshot: "Sabtu, 07 Nov 2026"
+            const formattedString = `${dayName}, ${day < 10 ? '0' + day : day} ${monthName} ${year}`;
+            document.getElementById('date-display-text').innerText = formattedString;
+        }
+
+        function handleDateChange() {
+            updateDateDisplay();
+            renderTickets();
+        }
+
+        function setDatePreset(daysFromToday) {
+            const baseDate = new Date(2026, 10, 7); // 7 Nov 2026
+            baseDate.setDate(baseDate.getDate() + daysFromToday);
+            
+            const yyyy = baseDate.getFullYear();
+            const mm = String(baseDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(baseDate.getDate()).padStart(2, '0');
+            
+            document.getElementById('travel-date').value = `${yyyy}-${mm}-${dd}`;
+            updateDateDisplay();
+            renderTickets();
+        }
+
+        // Database Simulasi Platform Luar
         let ticketData = [
+            // RUTE: JAKARTA -> YOGYAKARTA
             {
                 id: 1,
-                operator: "Sinar Jaya Executive",
+                depTime: "07:30 WIB",
+                arrTime: "16:30 WIB",
                 category: "bus",
                 origin: "Jakarta",
                 dest: "Yogyakarta",
-                depTime: "07:30 WIB",
-                arrTime: "16:30 WIB",
+                buses: [
+                    { name: "Sinar Jaya Executive", link: "https://www.traveloka.com/id-id/bus-and-shuttle" },
+                    { name: "Rosalia Indah VIP", link: "https://www.rosalia-indah.co.id" },
+                    { name: "Murni Jaya", link: "https://www.redbus.id" },
+                    { name: "PO Santoso", link: "https://www.tiket.com/bus-travel" }
+                ],
                 price: "Rp 480.000",
                 platform: "Traveloka",
                 platformColor: "bg-blue-600 text-white",
                 btnBg: "bg-blue-600 hover:bg-blue-700 text-white",
                 link: "https://www.traveloka.com/id-id/bus-and-shuttle",
                 available: true,
-                seats: 4
+                seats: 12
             },
             {
                 id: 2,
-                operator: "Argo Lawu Executive",
+                depTime: "08:00 WIB",
+                arrTime: "14:00 WIB",
                 category: "train",
                 origin: "Jakarta",
                 dest: "Yogyakarta",
-                depTime: "08:00 WIB",
-                arrTime: "14:00 WIB",
+                buses: [
+                    { name: "Argo Lawu Executive", link: "https://booking.kai.id" },
+                    { name: "Taksaka Pagi", link: "https://booking.kai.id" }
+                ],
                 price: "Rp 650.000",
                 platform: "KAI Access",
                 platformColor: "bg-orange-600 text-white",
@@ -250,28 +370,125 @@
             },
             {
                 id: 3,
-                operator: "Sumber Alam Sleeper Bus",
+                depTime: "14:15 WIB",
+                arrTime: "23:00 WIB",
                 category: "bus",
                 origin: "Jakarta",
                 dest: "Yogyakarta",
+                buses: [
+                    { name: "Sinar Jaya Suite Class", link: "https://www.traveloka.com/id-id/bus-and-shuttle" },
+                    { name: "27 Trans President Class", link: "https://www.redbus.id" },
+                    { name: "Juragan 99 Sleeper", link: "https://juragan99trans.id" },
+                    { name: "Agra Mas Executive", link: "https://www.tiket.com/bus-travel" }
+                ],
+                price: "Rp 550.000",
+                platform: "RedBus",
+                platformColor: "bg-rose-600 text-white",
+                btnBg: "bg-rose-600 hover:bg-rose-700 text-white",
+                link: "https://www.redbus.id",
+                available: true,
+                seats: 6
+            },
+            {
+                id: 4,
                 depTime: "18:30 WIB",
                 arrTime: "04:00 WIB",
+                category: "bus",
+                origin: "Jakarta",
+                dest: "Yogyakarta",
+                buses: [
+                    { name: "Sumber Alam Sleeper", link: "https://www.tiket.com/bus-travel" },
+                    { name: "Handoyo Executive", link: "https://www.redbus.id" },
+                    { name: "Sinar Jaya Super Double Decker", link: "https://www.traveloka.com/id-id/bus-and-shuttle" },
+                    { name: "PO Haryanto", link: "https://www.tiket.com/bus-travel" },
+                    { name: "Pahala Kencana", link: "https://www.redbus.id" }
+                ],
                 price: "Rp 520.000",
                 platform: "Tiket.com",
                 platformColor: "bg-amber-400 text-slate-950",
                 btnBg: "bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold",
                 link: "https://www.tiket.com/bus-travel",
                 available: true,
-                seats: 2
+                seats: 4
             },
             {
-                id: 4,
-                operator: "DayTrans Executive Shuttle",
+                id: 5,
+                depTime: "01:15 WIB",
+                arrTime: "09:30 WIB",
+                category: "bus",
+                origin: "Jakarta",
+                dest: "Yogyakarta",
+                buses: [
+                    { name: "Sinar Jaya Night Express", link: "https://www.traveloka.com/id-id/bus-and-shuttle" },
+                    { name: "Damri AKAP", link: "https://www.redbus.id" }
+                ],
+                price: "Rp 430.000",
+                platform: "Traveloka",
+                platformColor: "bg-blue-600 text-white",
+                btnBg: "bg-blue-600 hover:bg-blue-700 text-white",
+                link: "https://www.traveloka.com/id-id/bus-and-shuttle",
+                available: true,
+                seats: 8
+            },
+
+            // RUTE: JAKARTA -> SURABAYA / MALANG
+            {
+                id: 6,
+                depTime: "15:00 WIB",
+                arrTime: "01:00 WIB",
+                category: "bus",
+                origin: "Jakarta",
+                dest: "Surabaya",
+                buses: [
+                    { name: "Harapan Jaya Double Decker", link: "https://www.redbus.id" },
+                    { name: "Sinar Jaya Super Executive", link: "https://www.traveloka.com/id-id/bus-and-shuttle" },
+                    { name: "Juragan 99 Trans Sleeper", link: "https://juragan99trans.id" },
+                    { name: "Rosalia Indah Super Top", link: "https://www.rosalia-indah.co.id" },
+                    { name: "27 Trans Urban", link: "https://www.redbus.id" }
+                ],
+                price: "Rp 580.000",
+                platform: "RedBus",
+                platformColor: "bg-rose-600 text-white",
+                btnBg: "bg-rose-600 hover:bg-rose-700 text-white",
+                link: "https://www.redbus.id",
+                available: true,
+                seats: 15
+            },
+            {
+                id: 7,
+                depTime: "19:00 WIB",
+                arrTime: "06:00 WIB",
+                category: "bus",
+                origin: "Jakarta",
+                dest: "Malang",
+                buses: [
+                    { name: "Gunung Harta Sleeper Super High Deck", link: "https://www.tiket.com/bus-travel" },
+                    { name: "Juragan 99 Malang Express", link: "https://juragan99trans.id" },
+                    { name: "27 Trans President", link: "https://www.redbus.id" },
+                    { name: "Rosalia Indah First Class", link: "https://www.rosalia-indah.co.id" }
+                ],
+                price: "Rp 620.000",
+                platform: "Tiket.com",
+                platformColor: "bg-amber-400 text-slate-950",
+                btnBg: "bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold",
+                link: "https://www.tiket.com/bus-travel",
+                available: true,
+                seats: 3
+            },
+
+            // RUTE: BANDUNG -> SURABAYA / YOGYAKARTA / JAKARTA
+            {
+                id: 8,
+                depTime: "10:00 WIB",
+                arrTime: "21:00 WIB",
                 category: "shuttle",
                 origin: "Bandung",
                 dest: "Surabaya",
-                depTime: "10:00 WIB",
-                arrTime: "21:00 WIB",
+                buses: [
+                    { name: "DayTrans Executive Shuttle", link: "https://www.redbus.id" },
+                    { name: "Bhadrika Shuttle", link: "https://www.redbus.id" },
+                    { name: "Sugeng Rahayu Luxury", link: "https://www.traveloka.com/id-id/bus-and-shuttle" }
+                ],
                 price: "Rp 350.000",
                 platform: "RedBus",
                 platformColor: "bg-rose-600 text-white",
@@ -281,24 +498,51 @@
                 seats: 7
             },
             {
-                id: 5,
-                operator: "Taksaka Luxury Train",
-                category: "train",
-                origin: "Jakarta",
+                id: 9,
+                depTime: "17:00 WIB",
+                arrTime: "03:00 WIB",
+                category: "bus",
+                origin: "Bandung",
                 dest: "Yogyakarta",
-                depTime: "21:00 WIB",
-                arrTime: "03:30 WIB",
-                price: "Rp 1.200.000",
-                platform: "Pegipegi / KAI",
-                platformColor: "bg-teal-600 text-white",
-                btnBg: "bg-teal-600 hover:bg-teal-700 text-white",
-                link: "https://booking.kai.id",
-                available: false,
-                seats: 0
+                buses: [
+                    { name: "Budiman Executive", link: "https://www.traveloka.com/id-id/bus-and-shuttle" },
+                    { name: "Aladdin Express", link: "https://www.tiket.com/bus-travel" },
+                    { name: "Suka Express", link: "https://www.redbus.id" }
+                ],
+                price: "Rp 240.000",
+                platform: "Traveloka",
+                platformColor: "bg-blue-600 text-white",
+                btnBg: "bg-blue-600 hover:bg-blue-700 text-white",
+                link: "https://www.traveloka.com/id-id/bus-and-shuttle",
+                available: true,
+                seats: 9
+            },
+
+            // RUTE: TASIKMALAYA -> JAKARTA / BANDUNG
+            {
+                id: 10,
+                depTime: "06:30 WIB",
+                arrTime: "12:30 WIB",
+                category: "bus",
+                origin: "Tasikmalaya",
+                dest: "Jakarta",
+                buses: [
+                    { name: "Budiman Super Executive", link: "https://www.traveloka.com/id-id/bus-and-shuttle" },
+                    { name: "Primajasa AC Ekonomi / Executive", link: "https://www.redbus.id" },
+                    { name: "Doa Ibu Express", link: "https://www.tiket.com/bus-travel" }
+                ],
+                price: "Rp 130.000",
+                platform: "Traveloka",
+                platformColor: "bg-blue-600 text-white",
+                btnBg: "bg-blue-600 hover:bg-blue-700 text-white",
+                link: "https://www.traveloka.com/id-id/bus-and-shuttle",
+                available: true,
+                seats: 18
             }
         ];
 
         let selectedCategory = 'all';
+        let selectedTimeRange = 'all';
 
         function setMode(cat) {
             selectedCategory = cat;
@@ -311,59 +555,171 @@
             renderTickets();
         }
 
+        function selectTimeFilter(range) {
+            selectedTimeRange = range;
+            document.querySelectorAll('.time-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white', 'border-brand-500');
+                btn.classList.add('bg-slate-950', 'text-slate-300', 'border-slate-800');
+            });
+            
+            const activeBtnMap = {
+                'all': 'btn-time-all',
+                '06:00-12:00': 'btn-time-1',
+                '12:00-18:00': 'btn-time-2',
+                '18:00-24:00': 'btn-time-3',
+                '00:00-06:00': 'btn-time-4'
+            };
+            
+            const activeId = activeBtnMap[range];
+            if(activeId) {
+                const el = document.getElementById(activeId);
+                el.classList.remove('bg-slate-950', 'text-slate-300', 'border-slate-800');
+                el.classList.add('bg-brand-600', 'text-white', 'border-brand-500');
+            }
+            renderTickets();
+        }
+
+        function isTimeInSelectedRange(depTimeStr, range) {
+            if (range === 'all') return true;
+            const hour = parseInt(depTimeStr.split(':')[0], 10);
+            
+            if (range === '06:00-12:00') return hour >= 6 && hour < 12;
+            if (range === '12:00-18:00') return hour >= 12 && hour < 18;
+            if (range === '18:00-24:00') return hour >= 18 && hour <= 23;
+            if (range === '00:00-06:00') return hour >= 0 && hour < 6;
+            return true;
+        }
+
+        function updateCounts(filteredBase) {
+            let cAll = 0, c1 = 0, c2 = 0, c3 = 0, c4 = 0;
+            
+            filteredBase.forEach(t => {
+                if(t.available) {
+                    const seats = t.seats;
+                    cAll += seats;
+                    const hour = parseInt(t.depTime.split(':')[0], 10);
+                    if (hour >= 6 && hour < 12) c1 += seats;
+                    else if (hour >= 12 && hour < 18) c2 += seats;
+                    else if (hour >= 18 && hour <= 23) c3 += seats;
+                    else if (hour >= 0 && hour < 6) c4 += seats;
+                }
+            });
+
+            document.getElementById('cnt-all').innerText = `(${cAll})`;
+            document.getElementById('cnt-1').innerText = `(${c1})`;
+            document.getElementById('cnt-2').innerText = `(${c2})`;
+            document.getElementById('cnt-3').innerText = `(${c3})`;
+            document.getElementById('cnt-4').innerText = `(${c4})`;
+        }
+
+        function updateRouteSummaryBox(filteredList) {
+            const container = document.getElementById('available-bus-tags');
+            
+            let allBusNames = [];
+            filteredList.forEach(t => {
+                if(t.available) {
+                    t.buses.forEach(b => {
+                        if(!allBusNames.includes(b.name)) {
+                            allBusNames.push(b.name);
+                        }
+                    });
+                }
+            });
+
+            if (allBusNames.length === 0) {
+                container.innerHTML = `<span class="text-slate-500 text-xs italic">Tidak ada armada bus tersedia untuk filter saat ini.</span>`;
+            } else {
+                container.innerHTML = allBusNames.map(name => `
+                    <span class="bg-brand-500/10 text-brand-300 border border-brand-500/30 text-xs font-semibold px-2.5 py-1 rounded-lg">
+                        <i class="fa-solid fa-check text-[10px] text-emerald-400 mr-1"></i>${name}
+                    </span>
+                `).join('');
+            }
+        }
+
         function renderTickets() {
             const container = document.getElementById('tickets-container');
             const origin = document.getElementById('origin-select').value;
             const dest = document.getElementById('dest-select').value;
             const statusFilter = document.getElementById('status-select').value;
+            const busSearch = document.getElementById('bus-search').value.toLowerCase().trim();
 
-            let filtered = ticketData.filter(t => {
+            let baseFiltered = ticketData.filter(t => {
                 const matchCat = (selectedCategory === 'all' || t.category === selectedCategory);
                 const matchOrigin = (origin === 'all' || t.origin.toLowerCase().includes(origin.toLowerCase()));
                 const matchDest = (dest === 'all' || t.dest.toLowerCase().includes(dest.toLowerCase()));
-                const matchStatus = (statusFilter === 'all' || (statusFilter === 'available' && t.available) || (statusFilter === 'soldout' && !t.available));
-                return matchCat && matchOrigin && matchDest && matchStatus;
+                return matchCat && matchOrigin && matchDest;
             });
 
-            // Update stats
+            updateCounts(baseFiltered);
+            updateRouteSummaryBox(baseFiltered);
+
+            let filtered = baseFiltered.filter(t => {
+                const matchStatus = (statusFilter === 'all' || (statusFilter === 'available' && t.available) || (statusFilter === 'soldout' && !t.available));
+                const matchTime = isTimeInSelectedRange(t.depTime, selectedTimeRange);
+                
+                const busNamesConcat = t.buses.map(b => b.name).join(' ').toLowerCase();
+                const matchSearch = busSearch === '' || busNamesConcat.includes(busSearch);
+                
+                return matchStatus && matchTime && matchSearch;
+            });
+
             const countAvailable = ticketData.filter(t => t.available).length;
             const countSoldOut = ticketData.filter(t => !t.available).length;
             document.getElementById('stat-available').innerText = `${countAvailable} Rute`;
             document.getElementById('stat-soldout').innerText = `${countSoldOut} Rute`;
-            document.getElementById('total-count-badge').innerText = `${filtered.length} Rute Ditemukan`;
+            document.getElementById('total-count-badge').innerText = `${filtered.length} Jadwal Ditemukan`;
 
             if (filtered.length === 0) {
                 container.innerHTML = `
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-2">
                         <i class="fa-solid fa-folder-open text-3xl text-slate-600"></i>
-                        <p class="text-sm font-bold text-slate-300">Tidak ada rute yang cocok dengan filter Anda.</p>
-                        <p class="text-xs text-slate-500">Coba ubah opsi kota asal, tujuan, atau kategori transportasi.</p>
+                        <p class="text-sm font-bold text-slate-300">Tidak ada jadwal yang cocok dengan filter Anda.</p>
+                        <p class="text-xs text-slate-500">Coba ubah opsi pencarian PO bus, rentang jam keberangkatan, atau tanggal.</p>
                     </div>
                 `;
                 return;
             }
 
             container.innerHTML = filtered.map(t => {
+                const isBusCategory = t.category === 'bus' || t.category === 'shuttle';
+                const typeIcon = isBusCategory ? 'fa-bus text-amber-400' : 'fa-train text-emerald-400';
+                
+                const busBadges = t.buses.map(b => `
+                    <a href="${b.link}" target="_blank" class="bg-slate-800 hover:bg-brand-600 hover:text-white border border-slate-700/80 text-slate-200 text-[11px] font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition group">
+                        <i class="fa-solid ${typeIcon} text-[10px]"></i>
+                        <span>${b.name}</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px] opacity-60 group-hover:opacity-100"></i>
+                    </a>
+                `).join('');
+
                 if (t.available) {
                     return `
                         <div class="bg-slate-900 hover:bg-slate-850 border-2 border-emerald-500/40 hover:border-emerald-500 rounded-2xl p-5 transition shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div class="space-y-2">
+                            <div class="space-y-3">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="${t.platformColor} text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Ref: ${t.platform}</span>
                                     <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase flex items-center gap-1.5">
                                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> TERSEDIA (${t.seats} KURSI SISA)
                                     </span>
                                 </div>
-                                <h3 class="font-bold text-lg text-white font-['Space_Grotesk']">${t.operator}</h3>
-                                <p class="text-xs text-slate-400 flex items-center gap-2">
-                                    <span><i class="fa-regular fa-clock text-brand-500 mr-1"></i> Keberangkatan: <b>${t.depTime}</b></span>
-                                    <span>•</span>
-                                    <span>${t.origin} &rarr; ${t.dest}</span>
-                                </p>
+                                
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-regular fa-clock text-brand-500 text-lg"></i>
+                                    <h3 class="font-extrabold text-2xl text-white font-['Space_Grotesk'] tracking-tight">${t.depTime} <span class="text-slate-500 font-normal text-lg">&rarr;</span> ${t.arrTime}</h3>
+                                    <span class="text-xs text-slate-400 bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800">${t.origin} &rarr; ${t.dest}</span>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Pilih Bus / Armada Tersedia (Klik untuk Pesan):</span>
+                                    <div class="flex flex-wrap gap-1.5 pt-0.5">
+                                        ${busBadges}
+                                    </div>
+                                </div>
                             </div>
                             <div class="flex items-center gap-4 border-t md:border-t-0 pt-3 md:pt-0 border-slate-800 justify-between md:justify-end">
                                 <div class="text-left md:text-right">
-                                    <span class="text-[10px] text-slate-400 block">Harga di ${t.platform}:</span>
+                                    <span class="text-[10px] text-slate-400 block">Mulai Dari (${t.platform}):</span>
                                     <span class="text-xl font-extrabold text-brand-400 font-['Space_Grotesk']">${t.price}</span>
                                 </div>
                                 <a href="${t.link}" target="_blank" class="${t.btnBg} text-xs px-5 py-3 rounded-xl shadow-md transition flex items-center gap-2 shrink-0">
@@ -376,19 +732,26 @@
                 } else {
                     return `
                         <div class="bg-slate-950/60 border border-rose-500/30 rounded-2xl p-5 transition opacity-75 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div class="space-y-2">
+                            <div class="space-y-3">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="bg-slate-800 text-slate-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Ref: ${t.platform}</span>
                                     <span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
                                         🔴 HABIS (SOLD OUT)
                                     </span>
                                 </div>
-                                <h3 class="font-bold text-lg text-slate-400 line-through font-['Space_Grotesk']">${t.operator}</h3>
-                                <p class="text-xs text-slate-500 flex items-center gap-2">
-                                    <span><i class="fa-regular fa-clock text-slate-600 mr-1"></i> Keberangkatan: ${t.depTime}</span>
-                                    <span>•</span>
-                                    <span>${t.origin} &rarr; ${t.dest}</span>
-                                </p>
+                                
+                                <div class="flex items-center gap-3">
+                                    <i class="fa-regular fa-clock text-slate-600 text-lg"></i>
+                                    <h3 class="font-extrabold text-2xl text-slate-400 font-['Space_Grotesk'] tracking-tight line-through">${t.depTime} &rarr; ${t.arrTime}</h3>
+                                    <span class="text-xs text-slate-500 bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800">${t.origin} &rarr; ${t.dest}</span>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Armada pada Jam Ini:</span>
+                                    <div class="flex flex-wrap gap-1.5 pt-0.5 opacity-60">
+                                        ${busBadges}
+                                    </div>
+                                </div>
                             </div>
                             <div class="flex items-center gap-4 border-t md:border-t-0 pt-3 md:pt-0 border-slate-800/50 justify-between md:justify-end">
                                 <div class="text-left md:text-right">
@@ -409,7 +772,6 @@
         // SIMULATOR AUTO-SYNC REAL-TIME DATA (Setiap 7 Detik)
         function startRealTimeSync() {
             setInterval(() => {
-                // Pick random item to change status or seat count
                 const randomIndex = Math.floor(Math.random() * ticketData.length);
                 const item = ticketData[randomIndex];
 
@@ -421,12 +783,10 @@
                         item.seats = 0;
                     }
                 } else {
-                    // Coba buka kembali (simulasi ada pemudik yang batal/refund)
                     item.available = true;
-                    item.seats = Math.floor(Math.random() * 3) + 1;
+                    item.seats = Math.floor(Math.random() * 5) + 1;
                 }
 
-                // Update UI timestamp & tickets
                 const now = new Date();
                 const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
                 document.getElementById('last-sync-time').innerText = timeStr;
@@ -435,7 +795,9 @@
             }, 7000);
         }
 
-        // Initial Render
+        // Init Tanggal Awal (2026-11-07)
+        document.getElementById('travel-date').value = "2026-11-07";
+        updateDateDisplay();
         renderTickets();
         startRealTimeSync();
     </script>
