@@ -1,425 +1,473 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth font-sans">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TitikTemu.id - Radar Tiket Multi-Platform</title>
+<title>TitikTemu.id - Cari Tiket Bus, Kereta &amp; Travel</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script>
-tailwind.config={theme:{extend:{colors:{brand:{50:'#f0fdf4',400:'#34d399',500:'#10b981',600:'#059669',800:'#065f46',900:'#022c22',950:'#011711'},accent:{gold:'#f59e0b'}}}}}
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>body{font-family:'Plus Jakarta Sans',sans-serif}.sg{font-family:'Space Grotesk',sans-serif}</style>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#030a09;color:#e2e8f0;overflow-x:hidden}
+.glass{background:rgba(14,22,21,.62);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(148,163,184,.12)}
+
+/* ---- latar: aurora halus + grid ---- */
+.aurora{position:fixed;inset:0;z-index:-2;overflow:hidden;background:radial-gradient(ellipse at top,#06221c 0%,#030a09 65%)}
+.aurora i{position:absolute;border-radius:50%;filter:blur(120px);opacity:.26;will-change:transform}
+.aurora i:nth-child(1){width:560px;height:560px;background:#10b981;top:-200px;left:-140px;animation:dr1 26s ease-in-out infinite alternate}
+.aurora i:nth-child(2){width:480px;height:480px;background:#0ea5e9;right:-160px;top:28%;animation:dr2 32s ease-in-out infinite alternate}
+.aurora i:nth-child(3){width:420px;height:420px;background:#f59e0b;bottom:-220px;left:32%;opacity:.12;animation:dr3 30s ease-in-out infinite alternate}
+@keyframes dr1{to{transform:translate(160px,110px) scale(1.15)}}
+@keyframes dr2{to{transform:translate(-150px,-90px) scale(1.2)}}
+@keyframes dr3{to{transform:translate(-120px,-70px) scale(1.1)}}
+.grid-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:52px 52px;-webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 25%,transparent 75%);mask-image:radial-gradient(ellipse at 50% 0%,#000 25%,transparent 75%)}
+
+/* ---- hero: teks naik per baris, kilau gradient, jalur rute ---- */
+.line{display:block;overflow:hidden;padding-bottom:.12em}
+.line>span{display:inline-block;transform:translateY(115%);animation:up .9s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--d)*130ms + 120ms)}
+@keyframes up{to{transform:none}}
+.fadeup{opacity:0;transform:translateY(18px);animation:fu .9s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--d)*130ms)}
+@keyframes fu{to{opacity:1;transform:none}}
+.shine-text{background:linear-gradient(100deg,#6ee7b7 20%,#fde68a 40%,#7dd3fc 60%,#6ee7b7 80%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 7s ease-in-out infinite alternate}
+@keyframes shine{to{background-position:100% 0}}
+.dash{stroke-dasharray:3 7;animation:dash 14s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-200}}
+.chip-live{display:inline-flex;align-items:center;gap:.5rem}
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex:none}
+.pulse{animation:pl 2s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 rgba(52,211,153,.6)}70%,100%{box-shadow:0 0 0 7px rgba(52,211,153,0)}}
+.pulse-r{animation:plr 1.8s infinite}
+@keyframes plr{0%{box-shadow:0 0 0 0 rgba(244,63,94,.6)}70%,100%{box-shadow:0 0 0 7px rgba(244,63,94,0)}}
+
+/* ---- input & segmented control ---- */
+.field{width:100%;background:rgba(2,8,7,.7);border:1px solid #334155;border-radius:.85rem;padding:.6rem .8rem;font-size:.85rem;outline:none;transition:border-color .25s,box-shadow .25s}
+.field:hover{border-color:#475569}
+.field:focus{border-color:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.12)}
+.seg{position:relative;display:grid;grid-template-columns:repeat(4,1fr);padding:4px;border-radius:1rem;background:rgba(2,8,7,.7);border:1px solid #334155}
+.pill{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/4);border-radius:.75rem;background:linear-gradient(135deg,#6ee7b7,#34d399);box-shadow:0 8px 22px -8px rgba(52,211,153,.8);transition:transform .45s cubic-bezier(.3,1.15,.4,1)}
+.segb{position:relative;z-index:1;padding:.6rem .25rem;font-size:.75rem;font-weight:700;color:#94a3b8;transition:color .3s}
+.segb:hover{color:#e2e8f0}.segb.on{color:#052e1f}
+
+/* ---- kartu: muncul saat di-scroll, sorotan mengikuti kursor ---- */
+.rv{opacity:0;transform:translateY(24px) scale(.985);filter:blur(6px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1),filter .7s;transition-delay:var(--d,0ms)}
+.rv.in{opacity:1;transform:none;filter:none}
+.rv.done{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,border-color .35s;transition-delay:0s}
+.card{position:relative;overflow:hidden}
+.card.done:hover{transform:translateY(-4px);border-color:rgba(52,211,153,.35);box-shadow:0 22px 50px -22px rgba(16,185,129,.55)}
+.card::after{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(52,211,153,.13),transparent 45%);opacity:0;transition:opacity .35s;pointer-events:none}
+.card:hover::after{opacity:1}
+.rline{position:relative;flex:1;min-width:70px;max-width:180px;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(52,211,153,.15),rgba(52,211,153,.55),rgba(251,191,36,.35))}
+.rdot{position:absolute;top:50%;left:0;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#6ee7b7;box-shadow:0 0 12px 2px rgba(110,231,183,.8)}
+.card:hover .rdot{animation:trav 1.8s cubic-bezier(.5,0,.3,1) infinite}
+@keyframes trav{0%{left:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{left:calc(100% - 8px);opacity:0}}
+
+/* ---- tombol platform ---- */
+.pbtn{display:inline-flex;align-items:center;gap:.35rem;font-size:.75rem;font-weight:700;padding:.55rem 1rem;border-radius:.8rem;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s,filter .25s}
+.pbtn:hover{transform:translateY(-2px);filter:brightness(1.12);box-shadow:0 10px 24px -10px currentColor}
+.pbtn:active{transform:scale(.96)}
+.pbtn .ar{display:inline-block;transition:transform .25s}
+.pbtn:hover .ar{transform:translate(2px,-2px)}
+.chip{display:inline-flex;align-items:center;gap:.4rem;font-size:10px;font-weight:700;padding:.15rem .55rem;border-radius:999px;border:1px solid}
+
+
+/* ===== TAMBAHAN: jaringan rute, cursor glow, progress, tiket melayang, border berputar ===== */
+#net{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.75}
+#glow{position:fixed;left:0;top:0;width:560px;height:560px;margin:-280px 0 0 -280px;border-radius:50%;background:radial-gradient(circle,rgba(52,211,153,.11),transparent 65%);pointer-events:none;z-index:-1;will-change:transform}
+#prog{position:fixed;top:0;left:0;right:0;height:3px;z-index:70;transform:scaleX(0);transform-origin:left;background:linear-gradient(90deg,#34d399,#fbbf24,#38bdf8);box-shadow:0 0 12px rgba(52,211,153,.8)}
+#hd{transition:padding .3s,background .3s,box-shadow .3s}
+#hd.sc{padding-top:.45rem;padding-bottom:.45rem;background:rgba(5,13,12,.88);box-shadow:0 12px 30px -16px rgba(0,0,0,.9)}
+.par{position:absolute;transition:transform .3s ease-out;will-change:transform}
+.tkt{display:flex;align-items:center;gap:.5rem;white-space:nowrap;font-size:.8rem;padding:.7rem 1rem;border-radius:1rem;background:rgba(15,28,26,.78);border:1px solid rgba(52,211,153,.28);backdrop-filter:blur(10px);box-shadow:0 22px 40px -20px rgba(0,0,0,.85),0 0 24px -10px rgba(52,211,153,.5)}
+.tkt .ln{width:26px;height:2px;border-radius:2px;background:linear-gradient(90deg,#34d399,#fbbf24)}
+.f1{animation:flt 6s ease-in-out infinite}.f2{animation:flt 7.5s ease-in-out -2s infinite}.f3{animation:flt 5.5s ease-in-out -4s infinite}
+@keyframes flt{50%{transform:translateY(-12px) rotate(.7deg)}}
+.stat{position:relative;overflow:hidden;text-align:center}
+.stat::before{content:"";position:absolute;left:50%;top:-40%;width:120%;height:80%;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(52,211,153,.18),transparent 65%)}
+@property --ang{syntax:'<angle>';inherits:false;initial-value:0deg}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:conic-gradient(from var(--ang),transparent 0 55%,rgba(52,211,153,.95),rgba(251,191,36,.85),transparent 95%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);mask-composite:exclude;opacity:0;transition:opacity .4s;animation:angspin 3.5s linear infinite;pointer-events:none}
+.card:hover::before{opacity:1}
+@keyframes angspin{to{--ang:360deg}}
+.pbtn{position:relative;overflow:hidden;transform:translate(var(--tx,0px),var(--ty,0px))}
+.pbtn:hover{transform:translate(var(--tx,0px),calc(var(--ty,0px) - 2px))}
+.pbtn:active{transform:scale(.96)}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);animation:rp .6s ease-out;pointer-events:none}
+@keyframes rp{to{transform:scale(3.5);opacity:0}}
+@media (pointer:coarse){#glow{display:none}}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv,.fadeup{opacity:1;transform:none;filter:none}.line>span{transform:none}}
+</style>
+<style>
+/* ===== TEMA: papan keberangkatan + tiket kertas ===== */
+body{font-family:'Bricolage Grotesque',sans-serif;background:linear-gradient(180deg,#0b1628,#11263f 55%,#0b1628) fixed;color:#e6edf6}
+.aurora,.grid-bg{display:none}
+#hd.sc{background:rgba(8,16,30,.92)}
+.hero{display:grid;gap:1.5rem;padding:1.5rem;border-radius:1.5rem;background:#0a1424;border:1px solid #223049}
+@media(min-width:768px){.hero{grid-template-columns:1fr 1fr;align-items:center;padding:2.5rem}}
+.hero h2{font-size:clamp(2.1rem,6vw,3.5rem);line-height:1.02;font-weight:800;letter-spacing:-.02em;color:#fff}
+.hero p{margin-top:1rem;max-width:36ch;font-size:.9rem;line-height:1.6;color:#9fb0c7}
+.board{background:#060d19;border:1px solid #1d2a40;border-radius:1rem;padding:1rem;overflow:hidden}
+.bhead{display:flex;align-items:center;gap:.5rem;font-size:12px;color:#7f93b0;margin-bottom:.4rem}
+.frow{display:flex;gap:4px;margin-top:8px}
+.fl{font-style:normal;width:1.4em;height:2em;display:grid;place-items:center;font:700 clamp(15px,4vw,28px)/1 'JetBrains Mono',monospace;color:#ffcf5a;background:linear-gradient(#1b2740 50%,#121c30 50%);border-radius:5px;position:relative}
+.fl::after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#050a12}
+.fl.sp{width:.7em;background:none}.fl.sp::after{display:none}
+.fl.flip{animation:flip .38s ease-out both}
+@keyframes flip{from{transform:rotateX(-85deg);opacity:.15}to{transform:none;opacity:1}}
+.pill{background:#ffb703;box-shadow:0 8px 22px -8px rgba(255,183,3,.7)}
+.segb.on{color:#1a1200}
+.field:focus{border-color:#ffb703;box-shadow:0 0 0 4px rgba(255,183,3,.15)}
+/* tiket kertas */
+.card.glass{background:#f0f4ef;color:#10203a;border:0;border-radius:14px;box-shadow:inset 6px 0 0 #0b7a75;
+ -webkit-mask:radial-gradient(circle 10px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 10px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat;
+ mask:radial-gradient(circle 10px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 10px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat}
+.card.done:hover{box-shadow:inset 6px 0 0 #ffb703;border-color:transparent}
+.card::before,.card::after{display:none}
+.card .text-slate-400,.card .text-slate-500{color:#53657a}
+.card .text-emerald-400,.card .text-emerald-300{color:#067a6e}
+.card .text-rose-400,.card .text-rose-300{color:#b3261e}
+.card [class*="border-t"]{border-top:2px dashed #c3cfd0}
+.rline{height:0;background:none;border-top:2px dashed #10203a;border-radius:0}
+.rdot{background:#e76f00;box-shadow:0 0 0 3px rgba(231,111,0,.25)}
+</style>
 </head>
-<body class="bg-brand-950 text-slate-100 min-h-screen flex flex-col antialiased">
+<body>
+<div class="aurora"><i></i><i></i><i></i></div>
+<div class="grid-bg"></div>
+<div id="prog"></div>
 
-<div class="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-900 border-b border-brand-800/50 py-2 px-4 text-xs">
- <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-  <div class="flex items-center gap-2">
-   <span id="mode-badge" class="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase"><span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> MODE SIMULASI</span>
-   <span class="text-slate-300">Data stok demo untuk Traveloka, Tiket.com, RedBus, Pegipegi & KAI Access.</span>
+<header id="hd" class="glass sticky top-0 z-50 px-4 py-3">
+  <div class="max-w-5xl mx-auto flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-400 to-amber-300 flex items-center justify-center text-lg shadow-lg shadow-emerald-500/25">🚌</div>
+      <h1 class="text-xl font-extrabold leading-none">TitikTemu<span class="text-emerald-400">.id</span></h1>
+    </div>
+    
   </div>
-  <div class="text-slate-400 text-[11px]"><i class="fa-solid fa-arrows-rotate text-brand-500"></i> Update terakhir: <b id="last-sync-time" class="text-slate-200">Baru saja</b></div>
- </div>
-</div>
-
-<header class="sticky top-0 z-50 bg-brand-950/80 backdrop-blur-xl border-b border-slate-800/80">
- <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
-  <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo({top:0,behavior:'smooth'})">
-   <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-accent-gold flex items-center justify-center text-brand-950 shadow-lg"><i class="fa-solid fa-satellite-dish text-xl"></i></div>
-   <div>
-    <span class="font-bold text-xl text-white sg">TitikTemu<span class="text-brand-500">.id</span></span>
-    <p class="text-[10px] text-slate-400">Monitoring Stok Transportasi Platform Luar</p>
-   </div>
-  </div>
-  <div class="hidden sm:flex items-center gap-6 text-xs bg-slate-900/80 px-4 py-2 rounded-xl border border-slate-800">
-   <div><span class="text-slate-400 block text-[10px]">TERSEDIA</span><span id="stat-available" class="font-extrabold text-emerald-400 text-sm">--</span></div>
-   <div class="w-px h-6 bg-slate-800"></div>
-   <div><span class="text-slate-400 block text-[10px]">HABIS</span><span id="stat-soldout" class="font-extrabold text-rose-400 text-sm">--</span></div>
-  </div>
- </div>
 </header>
 
-<main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8 space-y-8">
-
- <div class="rounded-3xl bg-gradient-to-r from-brand-900 via-slate-900 to-brand-950 p-6 sm:p-10 border border-slate-800 shadow-2xl">
-  <h1 class="text-3xl sm:text-5xl font-extrabold text-white sg leading-tight">Pantau Sisa Tiket <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-accent-gold">Bus, Kereta & Travel.</span></h1>
-  <p class="text-slate-400 text-sm sm:text-base mt-3 max-w-3xl">Pilih moda, rute, dan jam. Klik nama armada atau tombol platform untuk menuju halaman pemesanan.</p>
- </div>
-
- <section class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-xl space-y-6">
-  <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
-   <button type="button" data-mode="all" class="mode-tab bg-brand-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shrink-0"><i class="fa-solid fa-cubes"></i> Semua Moda</button>
-   <button type="button" data-mode="bus" class="mode-tab bg-slate-800 text-slate-400 hover:text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shrink-0"><i class="fa-solid fa-bus text-amber-500"></i> Bus AKAP</button>
-   <button type="button" data-mode="train" class="mode-tab bg-slate-800 text-slate-400 hover:text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shrink-0"><i class="fa-solid fa-train text-emerald-400"></i> Kereta Api (KAI)</button>
-   <button type="button" data-mode="shuttle" class="mode-tab bg-slate-800 text-slate-400 hover:text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shrink-0"><i class="fa-solid fa-van-shuttle text-blue-400"></i> Travel / Shuttle</button>
-  </div>
-
-  <form id="search-form" onsubmit="event.preventDefault();renderTickets();" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4">
-   <div class="lg:col-span-4 space-y-1.5">
-    <label class="text-xs font-bold text-slate-400 uppercase">Tanggal Perjalanan</label>
-    <div class="flex items-center gap-2">
-     <input type="date" id="travel-date" class="flex-grow bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-brand-500 [color-scheme:dark]">
-     <button type="button" onclick="setDatePreset(0)" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold px-3 py-2.5 rounded-xl">Hari ini</button>
-     <button type="button" onclick="setDatePreset(1)" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold px-3 py-2.5 rounded-xl">Besok</button>
+<main class="max-w-5xl mx-auto px-4 py-8 space-y-5">
+  <section class="hero">
+    <div>
+      <h2>Mau berangkat ke mana hari ini?</h2>
+      <p>Pilih rute dan tanggal, lalu buka situs pemesanan. Jumlah kursi dan harga terbaru dilihat langsung di situs tujuan.</p>
     </div>
-    <div class="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg"><i class="fa-solid fa-calendar-check"></i><span id="date-display-text">--</span></div>
-   </div>
-   <div class="lg:col-span-4 space-y-1.5">
-    <label class="text-xs font-bold text-slate-400 uppercase">Kota Keberangkatan</label>
-    <select id="origin-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500"></select>
-   </div>
-   <div class="lg:col-span-4 space-y-1.5">
-    <label class="text-xs font-bold text-slate-400 uppercase">Kota Tujuan</label>
-    <select id="dest-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-500"></select>
-   </div>
+    <div class="board" role="timer" aria-label="Hari, tanggal, dan jam sekarang (WIB)">
+      <div class="bhead"><i class="dot pulse" style="background:#ffb703"></i>Sekarang · WIB</div>
+      <div id="hari" class="frow"></div><div id="tglnow" class="frow"></div><div id="jam" class="frow"></div>
+    </div>
+  </section>
 
-   <div class="lg:col-span-12 space-y-2">
-    <label class="text-xs font-bold text-slate-400 uppercase block">Filter Jam Keberangkatan (jumlah kursi tersisa)</label>
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5" id="time-filters"></div>
-   </div>
+  <section class="grid grid-cols-3 gap-3 fadeup" style="--d:6">
+    <div class="glass stat rounded-2xl p-4"><b id="s1" class="block text-3xl font-extrabold text-emerald-400 tabular-nums">0</b><span class="text-[11px] text-slate-400">Rute dipantau</span></div>
+    <div class="glass stat rounded-2xl p-4"><b id="s2" class="block text-3xl font-extrabold text-amber-300 tabular-nums">0</b><span class="text-[11px] text-slate-400">Kota</span></div>
+    <div class="glass stat rounded-2xl p-4"><b id="s3" class="block text-3xl font-extrabold text-sky-300 tabular-nums">0</b><span class="text-[11px] text-slate-400">Platform tiket</span></div>
+  </section>
 
-   <div class="lg:col-span-8">
-    <div class="relative"><i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
-    <input type="text" id="bus-search" placeholder="Cari nama PO / kereta (contoh: Sinar Jaya, Argo Lawu, DayTrans)..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-500"></div>
-   </div>
-   <div class="lg:col-span-4">
-    <select id="status-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-500">
-     <option value="all">Tampilkan Semua (Tersedia & Habis)</option>
-     <option value="available">🟢 Hanya yang TERSEDIA</option>
-     <option value="soldout">🔴 Hanya yang HABIS</option>
-    </select>
-   </div>
-  </form>
+  <section class="glass fadeup rounded-2xl p-4 space-y-3" style="--d:7">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div><label class="text-[10px] font-bold text-slate-400 uppercase">Tanggal</label>
+        <input type="date" id="tgl" class="field [color-scheme:dark]"></div>
+      <div><label class="text-[10px] font-bold text-slate-400 uppercase">Kota Asal</label>
+        <select id="asal" class="field"></select></div>
+      <div><label class="text-[10px] font-bold text-slate-400 uppercase">Kota Tujuan</label>
+        <select id="tuju" class="field"></select></div>
+    </div>
+    <input type="hidden" id="moda" value="all">
+    <div class="seg" id="seg">
+      <span class="pill" id="pill"></span>
+      <button class="segb on" data-v="all">Semua moda</button>
+      <button class="segb" data-v="bus">🚌 Bus AKAP</button>
+      <button class="segb" data-v="train">🚆 Kereta</button>
+      <button class="segb" data-v="shuttle">🚐 Travel</button>
+    </div>
+  </section>
 
-  <div class="bg-brand-950/60 border border-brand-800/60 rounded-xl p-4 space-y-2">
-   <span id="summary-title" class="text-xs font-bold uppercase tracking-wider text-brand-400"></span>
-   <div id="available-bus-tags" class="flex flex-wrap gap-1.5"></div>
+  <div class="rv hd-rv flex items-center justify-between border-b border-slate-800 pb-2">
+    <h2 class="text-lg font-extrabold">Pilihan Rute</h2>
+    <span id="jumlah" class="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full"></span>
   </div>
- </section>
-
- <section class="space-y-4">
-  <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-   <div class="flex items-center gap-2">
-    <h2 class="text-xl font-bold text-white sg">Daftar Pantauan Tiket</h2>
-    <span id="total-count-badge" class="bg-brand-500/10 text-brand-400 text-xs font-bold px-2.5 py-1 rounded-full border border-brand-500/20">--</span>
-   </div>
-   <div class="flex items-center gap-2 text-xs text-slate-400"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Auto-sync aktif</div>
-  </div>
-  <div id="tickets-container" class="space-y-3"></div>
- </section>
+  <div id="daftar" class="space-y-3"></div>
 </main>
+<footer class="text-center text-xs text-slate-500 py-8">&copy; 2026 TitikTemu.id · Status tersedia/habis dicek manual dan bisa berubah kapan saja. Kepastian kursi &amp; harga ada di situs pemesanan.</footer>
 
-<footer class="bg-slate-950 border-t border-slate-800 py-6 text-xs text-slate-500 text-center">&copy; 2026 TitikTemu.id — Radar stok tiket multi-platform.</footer>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-/* ===== KONFIGURASI DATA LIVE =====
-   Isi LIVE_API_URL dengan endpoint backend Anda (yang mengambil stok dari penyedia resmi/mitra).
-   Format respons: [{id:1, available:true, seats:12}, ...]
-   Jika kosong, halaman memakai simulasi acak. */
-const LIVE_API_URL = "";
-const SYNC_MS = 7000;
-
-const daysIndo=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
-const monthsIndo=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
-const CAT={
- bus:{icon:'fa-bus text-amber-400',label:'Bus',summary:'Bus Tersedia di Rute Ini'},
- train:{icon:'fa-train text-emerald-400',label:'Kereta',summary:'Kereta Tersedia di Rute Ini'},
- shuttle:{icon:'fa-van-shuttle text-blue-400',label:'Travel',summary:'Travel/Shuttle Tersedia di Rute Ini'}
+/* PENGATURAN TitikTemu.id (sudah terisi, tidak perlu file config.js lagi) */
+const SUPABASE_URL = "https://xbtbsqoozldrgfatbdka.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_IfFFTnaBj1AmFvj6l6Rq9w_q-ik_Qyd";
+const ADMIN_WA = "6281234567890"; // ganti dengan nomor WhatsApp admin (awalan 62, tanpa 0/+)
+</script>
+<script>
+/* =====================================================================
+   PLATFORM — UBAH LINK DI SINI
+   Template yang terisi otomatis:
+     {asal} {tujuan}  → nama kota (contoh: Jakarta)
+     {asal_slug} {tujuan_slug} → huruf kecil (contoh: jakarta)
+     {tgl}            → tanggal terpilih (2026-11-22)
+   PENTING: format link tiap situs berbeda dan bisa berubah. Coba tiap
+   link dari halaman ini; kalau tidak cocok, ganti dengan format yang
+   Anda lihat di barisan alamat browser saat mencari di situs aslinya.
+   ===================================================================== */
+const PLATFORMS = {
+  tv:  { nama:"Traveloka", cls:"bg-blue-600 text-white",      link:"https://www.traveloka.com/id-id/bus-and-shuttle/route/{asal_slug}.{tujuan_slug}" },
+  tk:  { nama:"Tiket.com", cls:"bg-amber-400 text-slate-950", link:"https://www.tiket.com/bus-travel" },
+  rb:  { nama:"RedBus",    cls:"bg-rose-600 text-white",      link:"https://www.redbus.id" },
+  pg:  { nama:"Pegipegi",  cls:"bg-sky-600 text-white",       link:"https://www.pegipegi.com/bus" },
+  kai: { nama:"KAI Access",cls:"bg-orange-600 text-white",    link:"https://booking.kai.id" }
 };
-const ALL_SUMMARY='Armada Tersedia di Rute Ini';
 
-/* Platform: warna + link beranda per jenis */
-const P={
- traveloka:{n:'Traveloka',c:'bg-blue-600 text-white',b:'bg-blue-600 hover:bg-blue-700 text-white',bus:'https://www.traveloka.com/id-id/bus-and-shuttle',train:'https://www.traveloka.com/id-id/kereta-api'},
- tiket:{n:'Tiket.com',c:'bg-amber-400 text-slate-950',b:'bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold',bus:'https://www.tiket.com/bus-travel',train:'https://www.tiket.com/kereta-api'},
- redbus:{n:'RedBus',c:'bg-rose-600 text-white',b:'bg-rose-600 hover:bg-rose-700 text-white',bus:'https://www.redbus.id',train:'https://www.redbus.id'},
- pegipegi:{n:'Pegipegi',c:'bg-sky-600 text-white',b:'bg-sky-600 hover:bg-sky-700 text-white',bus:'https://www.pegipegi.com/bus',train:'https://www.pegipegi.com/kereta-api'},
- kai:{n:'KAI Access',c:'bg-orange-600 text-white',b:'bg-orange-600 hover:bg-orange-700 text-white',bus:'https://booking.kai.id',train:'https://booking.kai.id'}
+/* Platform yang ditampilkan untuk tiap moda */
+const PLATFORM_MODA = { bus:["tv","tk","rb","pg"], shuttle:["tv","tk","rb"], train:["kai","tv","tk"] };
+
+/* =====================================================================
+   DATA DARI SUPABASE
+   Rute dan status tersedia/habis tidak lagi ditulis di sini.
+   - Isi URL & kunci Supabase di file config.js
+   - Ubah rute dan status lewat halaman admin.html
+   ===================================================================== */
+const sb = (window.supabase && typeof SUPABASE_URL !== "undefined" && SUPABASE_URL && !SUPABASE_URL.includes("ISI_"))
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let RUTE = [], STATUS = [], RUTE_ID = {};
+
+async function muatRute() {
+  const { data, error } = await sb.from("rute").select("id,moda,asal,tujuan").order("id");
+  if (error) throw error;
+  RUTE = data.map(x => [x.moda, x.asal, x.tujuan]);
+  RUTE_ID = {}; data.forEach(x => { RUTE_ID[x.id] = x; });
+}
+
+async function muatStatus() {
+  if (!sb) return;
+  const tgl = $("tgl").value;
+  const { data, error } = await sb.from("status").select("rute_id,platform,status,dicek_pada").eq("tanggal", tgl);
+  if (error) { console.error(error); STATUS = []; return; }
+  const peta = {};
+  data.forEach(x => {
+    const r = RUTE_ID[x.rute_id]; if (!r) return;
+    const o = peta[x.rute_id] || (peta[x.rute_id] = { cat: r.moda, asal: r.asal, tuju: r.tujuan, tgl, cek: "", _t: 0 });
+    o[x.platform] = x.status;
+    const t = new Date(x.dicek_pada).getTime();
+    if (t > o._t) {
+      o._t = t;
+      o.cek = new Date(t).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false }).replace(/\./g, ":") + " WIB";
+    }
+  });
+  STATUS = Object.values(peta);
+}
+
+function tampilPesan(teks) {
+  $("jumlah").textContent = "";
+  $("daftar").innerHTML = '<div class="glass text-center text-sm text-rose-300 rounded-2xl p-10">' + teks + '</div>';
+}
+
+const NAMA_MODA = { bus:"Bus AKAP", train:"Kereta Api", shuttle:"Travel / Shuttle" };
+const IKON = { bus:"🚌", train:"🚆", shuttle:"🚐" };
+const HARI = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const BULAN = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+const $ = id => document.getElementById(id);
+
+/* =====================================================================
+   ID KOTA TRAVELOKA — diambil dari tabel "kota" di Supabase (isi lewat admin.html,
+   tab "Kota Traveloka"). Dengan ID ini, klik dari web ini selalu membuka rute &
+   tanggal yang benar, tidak terpengaruh pencarian terakhir di Traveloka.
+   Kota yang belum punya ID memakai link lama (halaman rute biasa).
+   ===================================================================== */
+let TV_KOTA = {};
+async function muatKota() {
+  if (!sb) return;
+  const { data, error } = await sb.from("kota").select("nama,tv_id");
+  if (error) { console.error(error); return; }
+  TV_KOTA = {}; data.forEach(x => { if (x.tv_id) TV_KOTA[x.nama] = x.tv_id; });
+}
+function linkTraveloka(asal, tuju, cadangan) {
+  const a = TV_KOTA[asal], b = TV_KOTA[tuju], v = $("tgl").value;
+  if (!a || !b || !v) return cadangan;
+  const [y, m, d] = v.split("-").map(Number), nama = encodeURIComponent(asal) + "." + encodeURIComponent(tuju), id = encodeURIComponent(a) + "." + encodeURIComponent(b);
+  return `https://www.traveloka.com/id-id/bus-and-train/search?st=${id}&stt=CITY_GEO.CITY_GEO&stn=${nama}&dt=${d}-${m}-${y}.null&ps=1.0.0&tab=BUS&pd=EXTRANET&initialTab=BUS&stc_code=${id}&stc_name=${nama}&entry=BUS&action=SEARCH_FORM`;
+}
+
+/* =====================================================================
+   FORMAT LINK PLATFORM LAIN (Tiket.com, RedBus, Pegipegi, KAI Access)
+   Format diajarkan lewat admin.html (tab "Platform lain") dan disimpan di
+   tabel platform_link + kota_platform. Kalau belum ada, memakai link umum.
+   ===================================================================== */
+const TRF = { raw:s=>s, enc:encodeURIComponent, plus:s=>encodeURIComponent(s).replace(/%20/g,"+"), slug:s=>s.trim().toLowerCase().replace(/\s+/g,"-"), low:s=>encodeURIComponent(s.toLowerCase()), usc:s=>s.trim().toLowerCase().replace(/\s+/g,"_") };
+let PL_TPL = {}, PL_KODE = {};
+async function muatPlatform() {
+  if (!sb) return;
+  const a = await sb.from("platform_link").select("platform,template");
+  const b = await sb.from("kota_platform").select("nama,platform,kode");
+  if (a.error || b.error) { console.error(a.error || b.error); return; }
+  PL_TPL = {}; PL_KODE = {};
+  a.data.forEach(x => { PL_TPL[x.platform] = x.template; });
+  b.data.forEach(x => { (PL_KODE[x.platform] = PL_KODE[x.platform] || {})[x.nama] = x.kode; });
+}
+function linkPlatform(k, asal, tuju, cadangan) {
+  const t = PL_TPL[k], v = $("tgl").value; if (!t || !v) return cadangan;
+  const [y, m, d] = v.split("-"); let gagal = false;
+  const ambil = (nama, j) => j === "code" ? (PL_KODE[k] || {})[nama] : (TRF[j] ? TRF[j](nama) : null);
+  const out = t.replace(/\{(asal|tujuan):(\w+)\}/g, (_, w, j) => { const x = ambil(w === "asal" ? asal : tuju, j); if (!x) { gagal = true; return ""; } return x; })
+    .replace(/\{y\}/g, y).replace(/\{m\}/g, m).replace(/\{d\}/g, d).replace(/\{m1\}/g, +m).replace(/\{d1\}/g, +d);
+  return gagal ? cadangan : out;
+}
+
+const slug = s => s.toLowerCase().replace(/\s+/g, "-");
+const isiLink = (tpl, asal, tuju) => tpl
+  .replace(/\{asal_slug\}/g, slug(asal)).replace(/\{tujuan_slug\}/g, slug(tuju))
+  .replace(/\{asal\}/g, encodeURIComponent(asal)).replace(/\{tujuan\}/g, encodeURIComponent(tuju))
+  .replace(/\{tgl\}/g, $("tgl").value);
+
+function teksTanggal() {
+  const v = $("tgl").value; if (!v) return "";
+  const [y, m, d] = v.split("-").map(Number);
+  return `${HARI[new Date(y, m - 1, d).getDay()]}, ${d} ${BULAN[m - 1]} ${y}`;
+}
+
+function isiKota() {
+  const a = [...new Set(RUTE.map(r => r[1]))].sort(), t = [...new Set(RUTE.map(r => r[2]))].sort();
+  $("asal").innerHTML = '<option value="all">Semua kota asal</option>' + a.map(k => `<option>${k}</option>`).join("");
+  $("tuju").innerHTML = '<option value="all">Semua kota tujuan</option>' + t.map(k => `<option>${k}</option>`).join("");
+}
+
+const CHIP = {
+  ada:   ["Tersedia",    "text-emerald-300 bg-emerald-500/10 border-emerald-500/30", "bg-emerald-400 pulse"],
+  habis: ["Habis",       "text-rose-300 bg-rose-500/10 border-rose-500/30",          "bg-rose-400"],
+  none:  ["Belum dicek", "text-slate-400 bg-slate-500/10 border-slate-600/40",        "bg-slate-500"]
 };
 
-let _id=0;
-/* Deep link ke halaman rute (pola URL dicek dari halaman rute Traveloka & Tiket.com).
-   RedBus, Pegipegi, dan KAI Access tidak punya pola URL rute yang terverifikasi -> ke beranda. */
-const slug=s=>s.toLowerCase().replace(/\s+/g,'-');
-const ROUTE={
- traveloka:(c,o,d)=>`https://www.traveloka.
- com/id-id/${c==='train'?'kereta-api/rute':'bus-and-shuttle/route'}/${slug(o)}.${slug(d)}`,
- tiket:(c,o,d)=>`https://www.tiket.com/${c==='train'?'kereta-api/rute':'bus-travel/rute'}/${slug(o)}-ke-${slug(d)}`
+function render() {
+  const a = $("asal").value, t = $("tuju").value, m = $("moda").value, tgl = teksTanggal(), tglVal = $("tgl").value;
+  const hasil = RUTE.filter(r => (m === "all" || r[0] === m) && (a === "all" || r[1] === a) && (t === "all" || r[2] === t));
+  hitung($("jumlah"), hasil.length);
+  $("daftar").innerHTML = hasil.length ? hasil.map(([cat, asal, tuju, khusus], i) => {
+    const st = STATUS.find(x => x.cat === cat && x.asal === asal && x.tuju === tuju && x.tgl === tglVal);
+    const tombol = PLATFORM_MODA[cat].map(k => {
+      const p = PLATFORMS[k], url = (khusus && khusus[k]) || (k === "tv" ? linkTraveloka(asal, tuju, isiLink(p.link, asal, tuju)) : linkPlatform(k, asal, tuju, isiLink(p.link, asal, tuju)));
+      const c = CHIP[(st && st[k]) || "none"], redup = st && st[k] === "habis" ? "opacity-60" : "";
+      return `<div class="flex flex-col items-center gap-1.5"><a href="${url}" target="_blank" rel="noopener" class="pbtn ${p.cls} ${redup}">Cari di ${p.nama} <span class="ar">↗</span></a><span class="chip ${c[1]}"><i class="dot ${c[2]}"></i>${c[0]}</span></div>`;
+    }).join("");
+    const pesan = jenis => `https://wa.me/${ADMIN_WA}?text=` + encodeURIComponent(`Laporan tiket ${jenis}\nRute: ${asal} → ${tuju} (${NAMA_MODA[cat]})\nTanggal: ${tgl || "-"}\nPlatform: `);
+    return `<div class="card glass rv rounded-2xl p-4 space-y-3 border-l-[3px] border-l-emerald-500/70" style="--d:${(i % 6) * 70}ms">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1.5">
+          <div class="text-[11px] text-slate-400 uppercase font-bold tracking-wide">${IKON[cat]} ${NAMA_MODA[cat]}${tgl ? ` · <span class="text-emerald-400">${tgl}</span>` : ""}</div>
+          <div class="flex items-center gap-3 text-lg font-extrabold"><span>${asal}</span><span class="rline"><i class="rdot"></i></span><span>${tuju}</span></div>
+        </div>
+        <div class="flex flex-wrap gap-3">${tombol}</div>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 border-t border-slate-800/80 pt-2">
+        <span>${st ? "Status dicek manual: " + st.cek : "Belum ada pengecekan untuk tanggal ini."}</span>
+        <span>Tahu kondisi terbaru? Lapor:
+          <a href="${pesan("TERSEDIA")}" target="_blank" rel="noopener" class="text-emerald-400 font-bold hover:underline">Tersedia</a> ·
+          <a href="${pesan("HABIS")}" target="_blank" rel="noopener" class="text-rose-400 font-bold hover:underline">Habis</a></span>
+      </div>
+    </div>`;
+  }).join("") : '<div class="glass rv text-center text-sm text-slate-400 rounded-2xl p-10">Tidak ada rute yang cocok. Ubah filter.</div>';
+  document.querySelectorAll("#daftar .rv").forEach(el => io.observe(el));
+}
+
+/* kartu muncul halus saat terlihat di layar */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add("in"); setTimeout(() => e.target.classList.add("done"), 1000); io.unobserve(e.target);
+}), { threshold: .08 });
+
+/* angka berhitung */
+function hitung(el, ke) {
+  const dari = parseInt(el.dataset.v || 0, 10); el.dataset.v = ke;
+  const t0 = performance.now();
+  (function step(t) { const p = Math.min((t - t0) / 600, 1), e = 1 - Math.pow(1 - p, 3);
+    el.innerText = Math.round(dari + (ke - dari) * e) + " rute ditemukan"; if (p < 1) requestAnimationFrame(step); })(t0);
+}
+
+/* pilihan moda dengan pil yang meluncur */
+document.querySelectorAll("#seg .segb").forEach((b, i) => b.addEventListener("click", () => {
+  document.querySelectorAll("#seg .segb").forEach(x => x.classList.remove("on")); b.classList.add("on");
+  $("pill").style.transform = `translateX(${i * 100}%)`; $("moda").value = b.dataset.v; render();
+}));
+
+/* sorotan cahaya mengikuti kursor di kartu */
+$("daftar").addEventListener("mousemove", e => {
+  const c = e.target.closest(".card"); if (!c) return;
+  const r = c.getBoundingClientRect(); c.style.setProperty("--mx", (e.clientX - r.left) + "px"); c.style.setProperty("--my", (e.clientY - r.top) + "px");
+});
+
+/* jam di header */
+function flap(el, str) {
+  if (el.dataset.s === str) return;
+  const first = el.dataset.s === undefined; el.dataset.s = str;
+  if (first) {
+    el.innerHTML = [...str].map((c, i) => `<i class="fl flip ${/[ :]/.test(c) ? "sp" : ""}" style="animation-delay:${i * 45}ms">${c === " " ? "&nbsp;" : c}</i>`).join("");
+    return;
+  }
+  [...str].forEach((c, i) => { const n = el.children[i]; if (n && n.textContent !== c) { n.textContent = c; n.style.animationDelay = "0s"; n.classList.remove("flip"); void n.offsetWidth; n.classList.add("flip"); } });
+}
+const tickJam = () => {
+  const n = new Date(), tz = { timeZone: "Asia/Jakarta" };
+  flap($("hari"), n.toLocaleDateString("id-ID", { ...tz, weekday: "long" }).toUpperCase());
+  flap($("tglnow"), n.toLocaleDateString("id-ID", { ...tz, day: "numeric", month: "short", year: "numeric" }).toUpperCase());
+  flap($("jam"), n.toLocaleTimeString("id-ID", { ...tz, hour12: false }).replace(/\./g, ":"));
 };
-function R(cat,origin,dest,dep,arr,price,plat,seats,names){
- const p=P[plat], fn=ROUTE[plat];
- const deep=fn?fn(cat,origin,dest):null;
- const home=p[cat==='train'?'train':'bus'];
- const badgeLink=deep||ROUTE.traveloka(cat,origin,dest);
- const extras=Object.keys(ROUTE).filter(k=>k!==plat).map(k=>({n:P[k].n,url:ROUTE[k](cat,origin,dest)}));
- return{id:++_id,category:cat,origin,dest,depTime:dep+' WIB',arrTime:arr+' WIB',
-  buses:names.map(n=>({name:n,link:badgeLink})),
-  price:'Rp '+price.toLocaleString('id-ID'),platform:p.n,platformColor:p.c,btnBg:p.b,
-  link:deep||home,deep:!!deep,extras,
-  available:seats>0,seats};
+tickJam(); setInterval(tickJam, 1000);
+
+
+/* progress scroll + header mengecil */
+addEventListener("scroll", () => {
+  const h = document.documentElement, p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+  $("prog").style.transform = `scaleX(${p})`; $("hd").classList.toggle("sc", h.scrollTop > 30);
+}, { passive: true });
+
+/* tiket melayang bergeser mengikuti kursor (parallax) */
+addEventListener("mousemove", e => {
+  const nx = e.clientX / innerWidth - .5, ny = e.clientY / innerHeight - .5;
+  document.querySelectorAll(".par").forEach(p => { const d = +p.dataset.d; p.style.transform = `translate3d(${-nx * d}px,${-ny * d}px,0)`; });
+});
+
+/* angka statistik berhitung naik */
+function naik(el, ke) {
+  const t0 = performance.now();
+  (function step(t) { const p = Math.min((t - t0) / 1400, 1), e = 1 - Math.pow(1 - p, 4); el.innerText = Math.round(ke * e); if (p < 1) requestAnimationFrame(step); })(t0);
+}
+function isiStat() {
+  naik($("s1"), RUTE.length);
+  naik($("s2"), new Set(RUTE.flatMap(r => [r[1], r[2]])).size);
+  naik($("s3"), Object.keys(PLATFORMS).length);
 }
 
-/* Data simulasi per jalur (stok bersifat demo) */
-let ticketData=[
- // JAKARTA -> YOGYAKARTA
- R('bus','Jakarta','Yogyakarta','07:30','16:30',480000,'traveloka',12,['Sinar Jaya Executive','Rosalia Indah VIP','Murni Jaya','PO Santoso']),
- R('bus','Jakarta','Yogyakarta','14:15','23:00',550000,'redbus',6,['Sinar Jaya Suite Class','27 Trans President Class','Juragan 99 Sleeper','Agra Mas Executive']),
- R('bus','Jakarta','Yogyakarta','18:30','04:00',520000,'tiket',4,['Sumber Alam Sleeper','Handoyo Executive','Haryanto','Pahala Kencana']),
- R('bus','Jakarta','Yogyakarta','01:15','09:30',430000,'traveloka',8,['Sinar Jaya Night Express','Damri AKAP'],"https://www.traveloka.com/en-id/bus-and-shuttle/search?st=a102813.a107442&stt=CITY_GEO.CITY_GEO&stn=Jakarta.Yogyakarta&dt=23-11-2026.null&ps=1&stc=.&productName=BUS&searchFormId=a8fbc781-0e9d-420d-95b7-7ce134ab56c1&utmId=FMRz2QGL"),
- R('train','Jakarta','Yogyakarta','08:00','14:00',650000,'kai',0,['Argo Lawu','Taksaka Pagi']),
- R('train','Jakarta','Yogyakarta','20:45','04:50',620000,'kai',14,['Taksaka Malam']),
- R('train','Jakarta','Yogyakarta','19:30','03:55',560000,'tiket',22,['Progo']),
- R('train','Jakarta','Yogyakarta','05:10','13:30',210000,'traveloka',35,['Fajar Utama Yogya']),
- R('shuttle','Jakarta','Yogyakarta','19:00','05:00',420000,'redbus',9,['Cipaganti Travel','Xtrans Jogja']),
- // JAKARTA -> SURABAYA
- R('bus','Jakarta','Surabaya','15:00','01:00',580000,'redbus',15,['Harapan Jaya Double Decker','Sinar Jaya Super Executive','Juragan 99 Trans Sleeper','Rosalia Indah Super Top','27 Trans Urban']),
- R('bus','Jakarta','Surabaya','17:30','05:30',600000,'pegipegi',5,['Pahala Kencana Sleeper','Agra Mas Double Decker']),
- R('train','Jakarta','Surabaya','20:20','04:40',690000,'kai',11,['Argo Bromo Anggrek']),
- R('train','Jakarta','Surabaya','09:00','17:35',650000,'tiket',0,['Argo Bromo Anggrek Siang']),
- R('train','Jakarta','Surabaya','19:45','04:40',640000,'traveloka',7,['Sembrani']),
- R('train','Jakarta','Surabaya','18:20','05:30',380000,'kai',28,['Gumarang']),
- // JAKARTA -> MALANG
- R('bus','Jakarta','Malang','19:00','06:00',620000,'tiket',3,['Gunung Harta Sleeper Super High Deck','Juragan 99 Malang Express','27 Trans President','Rosalia Indah First Class']),
- R('train','Jakarta','Malang','16:10','05:40',580000,'kai',10,['Gajayana']),
- R('train','Jakarta','Malang','15:45','06:30',280000,'traveloka',40,['Matarmaja']),
- // JAKARTA -> SEMARANG
- R('bus','Jakarta','Semarang','20:00','04:00',330000,'redbus',13,['Nusantara Executive','Sinar Jaya Semarang','Haryanto Kudus']),
- R('train','Jakarta','Semarang','07:20','12:35',450000,'kai',9,['Argo Muria','Argo Sindoro']),
- R('train','Jakarta','Semarang','23:45','06:05',230000,'tiket',0,['Brantas','Tawang Jaya']),
- R('shuttle','Jakarta','Semarang','21:00','04:30',280000,'pegipegi',6,['Cipaganti Semarang','Xtrans Semarang']),
- // JAKARTA -> BANDUNG
- R('train','Jakarta','Bandung','06:20','09:20',150000,'kai',20,['Argo Parahyangan']),
- R('train','Jakarta','Bandung','08:05','08:50',200000,'traveloka',33,['Whoosh (KCIC) Halim → Tegalluar']),
- R('bus','Jakarta','Bandung','05:30','09:30',90000,'redbus',16,['Primajasa','Damri Bandara']),
- R('shuttle','Jakarta','Bandung','07:00','10:30',150000,'traveloka',8,['Xtrans Bandung','Cipaganti','Baraya Travel']),
- R('shuttle','Jakarta','Bandung','13:00','16:30',150000,'tiket',0,['Baraya Travel','DayTrans']),
- // BANDUNG -> ...
- R('shuttle','Bandung','Surabaya','10:00','21:00',350000,'redbus',7,['DayTrans Executive Shuttle','Bhadrika Shuttle','Sugeng Rahayu Luxury']),
- R('bus','Bandung','Yogyakarta','17:00','03:00',240000,'traveloka',9,['Budiman Executive','Aladdin Express','Suka Express']),
- R('train','Bandung','Yogyakarta','07:20','14:45',285000,'kai',17,['Lodaya (ke Solo/Yogyakarta)']),
- R('train','Bandung','Yogyakarta','13:30','21:40',270000,'tiket',0,['Malabar']),
- R('train','Bandung','Surabaya','11:30','23:00',470000,'kai',5,['Turangga']),
- R('train','Bandung','Surabaya','09:10','21:55',360000,'traveloka',12,['Mutiara Selatan']),
- R('train','Bandung','Jakarta','05:15','08:30',150000,'kai',18,['Argo Parahyangan']),
- R('train','Bandung','Jakarta','07:30','08:15',200000,'traveloka',29,['Whoosh (KCIC) Tegalluar → Halim']),
- R('bus','Bandung','Jakarta','06:00','10:00',95000,'redbus',14,['Primajasa','Budiman']),
- R('shuttle','Bandung','Jakarta','08:00','11:30',150000,'pegipegi',10,['Xtrans','Cipaganti']),
- R('shuttle','Bandung','Yogyakarta','19:30','05:30',300000,'tiket',4,['Cipaganti Premium','Sumber Alam Travel']),
- // TASIKMALAYA
- R('bus','Tasikmalaya','Jakarta','06:30','12:30',130000,'traveloka',18,['Budiman Super Executive','Primajasa AC Executive','Doa Ibu Express']),
- R('train','Tasikmalaya','Yogyakarta','09:50','15:40',240000,'kai',13,['Lodaya','Malabar']),
- R('train','Tasikmalaya','Bandung','06:00','08:20',90000,'tiket',21,['Kahuripan','Pasundan']),
- R('shuttle','Tasikmalaya','Jakarta','05:00','11:00',150000,'redbus',6,['Bhadrika Travel','Primajasa Tasik']),
- R('shuttle','Tasikmalaya','Bandung','08:00','10:30',70000,'pegipegi',0,['Cipaganti Tasik','Baraya Travel']),
- // SURABAYA / SEMARANG / YOGYAKARTA -> JAKARTA
- R('train','Surabaya','Jakarta','07:30','16:15',680000,'kai',8,['Argo Bromo Anggrek','Sembrani']),
- R('bus','Surabaya','Jakarta','16:00','02:00',590000,'redbus',10,['Harapan Jaya','Sinar Jaya','Rosalia Indah']),
- R('train','Semarang','Jakarta','17:25','22:30',430000,'tiket',16,['Argo Muria','Argo Sindoro']),
- R('bus','Semarang','Jakarta','19:30','04:00',320000,'pegipegi',11,['Nusantara','Haryanto','Sinar Jaya']),
- R('train','Yogyakarta','Jakarta','09:00','15:30',640000,'kai',2,['Taksaka Pagi','Argo Lawu']),
- R('bus','Yogyakarta','Jakarta','17:00','03:00',470000,'traveloka',7,['Sinar Jaya','Rosalia Indah','Haryanto']),
- R('train','Yogyakarta','Bandung','08:10','15:35',280000,'kai',0,['Lodaya','Malabar']),
- R('shuttle','Yogyakarta','Surabaya','07:00','14:00',180000,'redbus',12,['Xtrans Jogja','Bhadrika'])
-];
+/* tombol magnetik + riak saat diklik */
+$("daftar").addEventListener("mousemove", e => {
+  const b = e.target.closest(".pbtn"); if (!b) return;
+  const r = b.getBoundingClientRect();
+  b.style.setProperty("--tx", ((e.clientX - r.left) / r.width - .5) * 8 + "px");
+  b.style.setProperty("--ty", ((e.clientY - r.top) / r.height - .5) * 8 + "px");
+});
+$("daftar").addEventListener("mouseout", e => { const b = e.target.closest(".pbtn"); if (b) { b.style.removeProperty("--tx"); b.style.removeProperty("--ty"); } });
+$("daftar").addEventListener("click", e => {
+  const b = e.target.closest(".pbtn"); if (!b) return;
+  const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height), s = document.createElement("span");
+  s.className = "rip"; s.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
+  b.appendChild(s); setTimeout(() => s.remove(), 600);
+});
 
-let selectedCategory='all', selectedTimeRange='all';
-const TIME_RANGES=[
- {k:'all',label:'Semua Jam',icon:'fa-clock'},
- {k:'06:00-12:00',label:'06:00-12:00',icon:'fa-sun text-amber-400'},
- {k:'12:00-18:00',label:'12:00-18:00',icon:'fa-sun text-amber-500'},
- {k:'18:00-24:00',label:'18:00-24:00',icon:'fa-cloud-moon text-indigo-400'},
- {k:'00:00-06:00',label:'00:00-06:00',icon:'fa-moon text-blue-400'}
-];
-const $=id=>document.getElementById(id);
-const hourOf=t=>parseInt(t.depTime.split(':')[0],10);
-function inRange(h,r){
- if(r==='all')return true;
- if(r==='06:00-12:00')return h>=6&&h<12;
- if(r==='12:00-18:00')return h>=12&&h<18;
- if(r==='18:00-24:00')return h>=18;
- return h<6;
-}
-function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+/* judul daftar muncul halus saat di-scroll */
+document.querySelectorAll(".hd-rv").forEach(el => io.observe(el));
 
-/* ---------- Tanggal ---------- */
-function pad(n){return n<10?'0'+n:''+n}
-function updateDateDisplay(){
- const v=$('travel-date').value; if(!v)return;
- const [y,m,d]=v.split('-').map(Number);
- const dt=new Date(y,m-1,d);
- $('date-display-text').innerText=`${daysIndo[dt.getDay()]}, ${pad(d)} ${monthsIndo[m-1]} ${y}`;
-}
-function setDatePreset(n){
- const d=new Date(); d.setDate(d.getDate()+n);
- $('travel-date').value=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
- updateDateDisplay(); renderTickets();
-}
+/* tanggal pencarian = hari ini (WIB); ikut berganti saat lewat tengah malam kalau belum diubah manual */
+const hariIni = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+let tglAuto = hariIni(), tglManual = false;
+$("tgl").value = tglAuto;
+$("tgl").addEventListener("change", () => { tglManual = true; });
+setInterval(() => {
+  const h = hariIni();
+  if (h !== tglAuto) { tglAuto = h; if (!tglManual) { $("tgl").value = h; muatStatus().then(render); } }
+}, 1000);
+["asal", "tuju", "moda"].forEach(i => $(i).addEventListener("change", render));
+$("tgl").addEventListener("change", () => muatStatus().then(render));
 
-/* ---------- Dropdown kota dinamis sesuai moda ---------- */
-function fillCitySelects(){
- const pool=ticketData.filter(t=>selectedCategory==='all'||t.category===selectedCategory);
- const o=$('origin-select'), d=$('dest-select');
- const curO=o.value||'all', curD=d.value||'all';
- const origins=[...new Set(pool.map(t=>t.origin))].sort();
- const dests=[...new Set(pool.map(t=>t.dest))].sort();
- o.innerHTML='<option value="all">Semua Kota Asal</option>'+origins.map(x=>`<option value="${x}">${x}</option>`).join('');
- d.innerHTML='<option value="all">Semua Kota Tujuan</option>'+dests.map(x=>`<option value="${x}">${x}</option>`).join('');
- o.value=origins.includes(curO)?curO:'all';
- d.value=dests.includes(curD)?curD:'all';
-}
-
-/* ---------- Filter jam ---------- */
-function buildTimeButtons(){
- $('time-filters').innerHTML=TIME_RANGES.map((r,i)=>`
-  <button type="button" data-range="${r.k}" class="time-filter-btn border p-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition">
-   <span><i class="fa-solid ${r.icon} mr-1"></i> ${r.label}</span>
-   <span id="cnt-${i}" class="px-2 py-0.5 rounded-md text-[10px] bg-black/30">(0)</span>
-  </button>`).join('');
- $('time-filters').querySelectorAll('button').forEach(b=>b.onclick=()=>{selectedTimeRange=b.dataset.range;renderTickets();});
-}
-function paintTimeButtons(){
- document.querySelectorAll('.time-filter-btn').forEach(b=>{
-  const on=b.dataset.range===selectedTimeRange;
-  b.className='time-filter-btn border p-2.5 rounded-xl text-xs font-semibold flex items-center justify-between transition '+
-   (on?'bg-brand-600 text-white border-brand-500':'bg-slate-950 hover:bg-slate-800 text-slate-300 border-slate-800');
- });
-}
-function updateCounts(list){
- TIME_RANGES.forEach((r,i)=>{
-  const n=list.filter(t=>t.available&&inRange(hourOf(t),r.k)).reduce((s,t)=>s+t.seats,0);
-  $('cnt-'+i).innerText=`(${n})`;
- });
-}
-
-/* ---------- Mode ---------- */
-function setMode(cat){
- selectedCategory=cat;
- document.querySelectorAll('.mode-tab').forEach(b=>{
-  const on=b.dataset.mode===cat;
-  b.classList.toggle('bg-brand-600',on); b.classList.toggle('text-white',on);
-  b.classList.toggle('bg-slate-800',!on); b.classList.toggle('text-slate-400',!on);
- });
- fillCitySelects();
- renderTickets();
-}
-
-/* ---------- Ringkasan armada ---------- */
-function updateSummary(list){
- $('summary-title').innerHTML=`<i class="fa-solid ${(CAT[selectedCategory]||CAT.bus).icon.split(' ')[0]} mr-1"></i> Rangkuman ${selectedCategory==='all'?ALL_SUMMARY:CAT[selectedCategory].summary}:`;
- const names=[];
- list.forEach(t=>{if(t.available)t.buses.forEach(b=>{if(!names.includes(b.name))names.push(b.name)})});
- $('available-bus-tags').innerHTML=names.length
-  ?names.map(n=>`<span class="bg-brand-500/10 text-brand-400 border border-brand-500/30 text-xs font-semibold px-2.5 py-1 rounded-lg"><i class="fa-solid fa-check text-[10px] text-emerald-400 mr-1"></i>${esc(n)}</span>`).join('')
-  :'<span class="text-slate-500 text-xs italic">Tidak ada armada tersedia untuk filter saat ini.</span>';
-}
-
-/* ---------- Render ---------- */
-function renderTickets(){
- paintTimeButtons();
- const origin=$('origin-select').value, dest=$('dest-select').value;
- const status=$('status-select').value, q=$('bus-search').value.toLowerCase().trim();
-
- const base=ticketData.filter(t=>
-  (selectedCategory==='all'||t.category===selectedCategory)&&
-  (origin==='all'||t.origin===origin)&&(dest==='all'||t.dest===dest));
- updateCounts(base); updateSummary(base);
-
- const list=base.filter(t=>
-  (status==='all'||(status==='available'&&t.available)||(status==='soldout'&&!t.available))&&
-  inRange(hourOf(t),selectedTimeRange)&&
-  (q===''||t.buses.some(b=>b.name.toLowerCase().includes(q))))
-  .sort((a,b)=>hourOf(a)-hourOf(b));
-
- $('stat-available').innerText=ticketData.filter(t=>t.available).length+' Jadwal';
- $('stat-soldout').innerText=ticketData.filter(t=>!t.available).length+' Jadwal';
- $('total-count-badge').innerText=`${list.length} Jadwal Ditemukan`;
-
- const c=$('tickets-container');
- if(!list.length){
-  c.innerHTML=`<div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-2"><i class="fa-solid fa-folder-open text-3xl text-slate-600"></i><p class="text-sm font-bold text-slate-300">Tidak ada jadwal yang cocok dengan filter Anda.</p><p class="text-xs text-slate-500">Coba ganti moda, rute, jam, atau kata kunci.</p></div>`;
-  return;
- }
- c.innerHTML=list.map(t=>{
-  const cat=CAT[t.category];
-  const badges=t.buses.map(b=>`<a href="${b.link}" target="_blank" rel="noopener" class="bg-slate-800 hover:bg-brand-600 hover:text-white border border-slate-700/80 text-slate-200 text-[11px] font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition"><i class="fa-solid ${cat.icon} text-[10px]"></i><span>${esc(b.name)}</span><i class="fa-solid fa-arrow-up-right-from-square text-[9px] opacity-60"></i></a>`).join('');
-  const typeTag=`<span class="bg-slate-800 text-slate-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase"><i class="fa-solid ${cat.icon} mr-1"></i>${cat.label}</span>`;
-  if(t.available) return `
-  <div class="bg-slate-900 border-2 border-emerald-500/40 hover:border-emerald-500 rounded-2xl p-5 transition shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-   <div class="space-y-3">
-    <div class="flex flex-wrap items-center gap-2">
-     ${typeTag}
-     <span class="${t.platformColor} text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">Ref: ${t.platform}</span>
-     <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> TERSEDIA (${t.seats} KURSI)</span>
-    </div>
-    <div class="flex flex-wrap items-center gap-3">
-     <i class="fa-regular fa-clock text-brand-500 text-lg"></i>
-     <h3 class="font-extrabold text-2xl text-white sg">${t.depTime} <span class="text-slate-500 font-normal text-lg">&rarr;</span> ${t.arrTime}</h3>
-     <span class="text-xs text-slate-400 bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800">${t.origin} &rarr; ${t.dest}</span>
-    </div>
-    <div class="space-y-1"><span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">${t.category==='train'?'Kereta':'Armada'} tersedia (klik untuk pesan):</span><div class="flex flex-wrap gap-1.5 pt-0.5">${badges}</div></div>
-    <div class="flex flex-wrap items-center gap-1.5 pt-1"><span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Cek rute ini juga di:</span>${t.extras.map(e=>`<a href="${e.url}" target="_blank" rel="noopener" class="text-[11px] font-semibold text-brand-400 hover:text-white border border-brand-500/30 hover:bg-brand-600 px-2.5 py-1 rounded-lg transition">${e.n} <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>`).join('')}</div>
-   </div>
-   <div class="flex items-center gap-4 border-t md:border-t-0 pt-3 md:pt-0 border-slate-800 justify-between md:justify-end">
-    <div class="md:text-right"><span class="text-[10px] text-slate-400 block">Mulai dari (${t.platform}):</span><span class="text-xl font-extrabold text-brand-400 sg">${t.price}</span></div>
-    <a href="${t.link}" target="_blank" rel="noopener" class="${t.btnBg} text-xs px-5 py-3 rounded-xl shadow-md flex items-center gap-2 shrink-0"><span>${t.deep?'Buka rute di '+t.platform:'Buka '+t.platform+' (cari manual)'}</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>
-   </div>
-  </div>`;
-  return `
-  <div class="bg-slate-950/60 border border-rose-500/30 rounded-2xl p-5 opacity-75 flex flex-col md:flex-row md:items-center justify-between gap-4">
-   <div class="space-y-3">
-    <div class="flex flex-wrap items-center gap-2">
-     ${typeTag}
-     <span class="bg-slate-800 text-slate-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Ref: ${t.platform}</span>
-     <span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">🔴 HABIS (SOLD OUT)</span>
-    </div>
-    <div class="flex flex-wrap items-center gap-3">
-     <i class="fa-regular fa-clock text-slate-600 text-lg"></i>
-     <h3 class="font-extrabold text-2xl text-slate-400 sg line-through">${t.depTime} &rarr; ${t.arrTime}</h3>
-     <span class="text-xs text-slate-500 bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800">${t.origin} &rarr; ${t.dest}</span>
-    </div>
-    <div class="space-y-1"><span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Armada pada jam ini:</span><div class="flex flex-wrap gap-1.5 pt-0.5 opacity-60">${badges}</div></div>
-   </div>
-   <div class="flex items-center gap-4 border-t md:border-t-0 pt-3 md:pt-0 border-slate-800/50 justify-between md:justify-end">
-    <div class="md:text-right"><span class="text-[10px] text-slate-500 block">Harga terakhir:</span><span class="text-xl font-bold text-slate-500 sg">${t.price}</span></div>
-    <button disabled class="bg-slate-800 text-slate-500 font-bold text-xs px-5 py-3 rounded-xl cursor-not-allowed flex items-center gap-1.5 shrink-0"><i class="fa-solid fa-ban text-xs"></i><span>HABIS</span></button>
-   </div>
-  </div>`;
- }).join('');
-}
-
-/* ---------- Sinkronisasi ---------- */
-async function syncStock(){
- if(LIVE_API_URL){
-  try{
-   const res=await fetch(LIVE_API_URL+'?date='+$('travel-date').value);
-   const rows=await res.json();
-   rows.forEach(r=>{const t=ticketData.find(x=>x.id===r.id); if(t){t.available=r.available;t.seats=r.seats;}});
-   const b=$('mode-badge'); b.className='inline-flex items-center gap-1.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase';
-   b.innerHTML='<span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span> LIVE';
-  }catch(e){console.warn('Sync gagal',e);}
- }else{
-  const item=ticketData[Math.floor(Math.random()*ticketData.length)];
-  if(item.available){ if(item.seats>1)item.seats--; else{item.available=false;item.seats=0;} }
-  else{ item.available=true; item.seats=Math.floor(Math.random()*5)+1; }
- }
- $('last-sync-time').innerText=new Date().toLocaleTimeString('id-ID')+' WIB';
- renderTickets();
-}
-
-/* ---------- Init ---------- */
-document.querySelectorAll('.mode-tab').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
-['origin-select','dest-select','status-select'].forEach(id=>$(id).onchange=renderTickets);
-$('bus-search').oninput=renderTickets;
-$('travel-date').onchange=()=>{updateDateDisplay();renderTickets();};
-buildTimeButtons();
-fillCitySelects();
-setDatePreset(0);
-setInterval(syncStock,SYNC_MS);
-if(LIVE_API_URL)syncStock();
+(async function mulai() {
+  if (!sb) { tampilPesan("Web belum tersambung ke Supabase. Isi SUPABASE_URL dan SUPABASE_ANON_KEY di bagian PENGATURAN pada file ini."); return; }
+  try { await muatRute(); await muatKota(); await muatPlatform(); isiKota(); await muatStatus(); render(); isiStat(); }
+  catch (e) { console.error(e); tampilPesan("Data rute gagal dimuat. Periksa koneksi internet dan pengaturan Supabase, lalu muat ulang halaman."); }
+})();
 </script>
 </body>
 </html>
