@@ -146,7 +146,8 @@ let _id=0;
    RedBus, Pegipegi, dan KAI Access tidak punya pola URL rute yang terverifikasi -> ke beranda. */
 const slug=s=>s.toLowerCase().replace(/\s+/g,'-');
 const ROUTE={
- traveloka:(c,o,d)=>`https://www.traveloka.com/id-id/${c==='train'?'kereta-api/rute':'bus-and-shuttle/route'}/${slug(o)}.${slug(d)}`,
+ traveloka:(c,o,d)=>`https://www.traveloka.
+ com/id-id/${c==='train'?'kereta-api/rute':'bus-and-shuttle/route'}/${slug(o)}.${slug(d)}`,
  tiket:(c,o,d)=>`https://www.tiket.com/${c==='train'?'kereta-api/rute':'bus-travel/rute'}/${slug(o)}-ke-${slug(d)}`
 };
 function R(cat,origin,dest,dep,arr,price,plat,seats,names){
