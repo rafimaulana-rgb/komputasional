@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Admin - TitikTemu.id</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1628;--panel:#0a1424;--line:#223049;--tx:#e6edf6;--mut:#9fb0c7;--amb:#ffb703;--ok:#2fbf8f;--no:#e5484d}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Bricolage Grotesque',system-ui,sans-serif;background:linear-gradient(180deg,#0b1628,#11263f 55%,#0b1628) fixed;color:var(--tx);min-height:100vh}
+.wrap{max-width:960px;margin:0 auto;padding:1.25rem 1rem 4rem}
+h1{font-size:1.25rem;font-weight:800;margin:0}
+h1 span{color:var(--amb)}
+h2{font-size:1.05rem;font-weight:800;margin:0 0 .75rem}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.75rem 0 1.25rem}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:1rem;padding:1rem}
+label{display:block;font-size:.75rem;font-weight:600;color:var(--mut);margin:0 0 .3rem}
+input,select{width:100%;background:#060d19;color:var(--tx);border:1px solid #334155;border-radius:.7rem;padding:.6rem .75rem;font:inherit;font-size:.9rem;outline:none;color-scheme:dark}
+input:focus,select:focus{border-color:var(--amb);box-shadow:0 0 0 3px rgba(255,183,3,.15)}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--amb);color:#1a1200;border:0;border-radius:.7rem;padding:.65rem 1rem;font-weight:800;font-size:.9rem}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn.ghost{background:transparent;color:var(--tx);border:1px solid var(--line);font-weight:600}
+.btn.small{padding:.4rem .7rem;font-size:.78rem}
+.grid{display:grid;gap:.75rem}
+@media(min-width:700px){.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}}
+.login{max-width:380px;margin:12vh auto 0}
+.login .grid{margin-top:1rem}
+.err{color:#ff8a8d;font-size:.85rem;margin-top:.6rem;min-height:1.2em}
+.tabs{display:flex;gap:.4rem;margin-bottom:1rem}
+.tab{background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:.7rem;padding:.5rem .9rem;font-weight:600;font-size:.88rem}
+.tab.on{background:var(--amb);color:#1a1200;border-color:var(--amb);font-weight:800}
+.row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem 1rem;padding:.8rem 0;border-top:1px dashed var(--line)}
+.row:first-child{border-top:0}
+.rt{font-weight:800}
+.rt small{display:block;font-weight:400;color:var(--mut);font-size:.75rem}
+.plats{display:flex;flex-wrap:wrap;gap:.6rem}
+.pl{display:flex;flex-direction:column;gap:.25rem;align-items:stretch;min-width:96px}
+.pl b{font-size:.72rem;font-weight:600;color:var(--mut)}
+.seg3{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #334155;border-radius:.6rem;overflow:hidden}
+.seg3 button{background:#060d19;color:var(--mut);border:0;padding:.4rem 0;font-size:.82rem;font-weight:700}
+.seg3 button+button{border-left:1px solid #334155}
+.seg3 button:hover{color:var(--tx)}
+.seg3 button.on-ada{background:var(--ok);color:#04251a}
+.seg3 button.on-habis{background:var(--no);color:#fff}
+.seg3 button.on-none{background:#334155;color:#fff}
+.bar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:end;margin-bottom:1rem}
+.bar>div{flex:1;min-width:150px}
+.hint{color:var(--mut);font-size:.82rem;margin:0 0 1rem}
+#toast{position:fixed;left:50%;bottom:1.2rem;transform:translateX(-50%) translateY(20px);background:#fff;color:#10203a;padding:.6rem 1rem;border-radius:.7rem;font-weight:700;font-size:.85rem;opacity:0;pointer-events:none;transition:.25s;z-index:9}
+#toast.show{opacity:1;transform:translateX(-50%)}
+#toast.bad{background:#ffdfe0;color:#7a1317}
+.diag{background:#3a1114;border:1px solid #7a1f24;color:#ffb3b6;border-radius:.8rem;padding:.7rem .9rem;font-size:.85rem;margin-bottom:1rem;word-break:break-word}
+.hide{display:none!important}
+code{word-break:break-all;color:var(--amb);font-size:.78rem}
+:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== LOGIN ===== -->
+  <section id="vLogin" class="login hide">
+    <div class="box">
+      <h1>TitikTemu<span>.id</span> Admin</h1>
+      <p class="hint" style="margin:.4rem 0 0">Masuk untuk mengubah status tiket dan daftar rute.</p>
+      <div class="grid">
+        <div><label for="em">Email</label><input id="em" type="email" autocomplete="username"></div>
+        <div><label for="pw">Kata sandi</label><input id="pw" type="password" autocomplete="current-password"></div>
+        <button id="btnLogin" class="btn">Masuk</button>
+      </div>
+      <div id="loginErr" class="err" role="alert"></div>
+    </div>
+  </section>
+
+  <!-- ===== PANEL ===== -->
+  <section id="vApp" class="hide">
+    <div class="top">
+      <h1>TitikTemu<span>.id</span> Admin</h1>
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <span id="who" style="font-size:.8rem;color:var(--mut)"></span>
+        <button id="btnOut" class="btn ghost small">Keluar</button>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-t="status" role="tab">Ubah status</button>
+      <button class="tab" data-t="rute" role="tab">Kelola rute</button>
+      <button class="tab" data-t="kota" role="tab">Kota Traveloka</button>
+      <button class="tab" data-t="plat" role="tab">Platform lain</button>
+    </div>
+    <div id="diag" class="diag hide" role="alert"></div>
+
+    <!-- Tab: status -->
+    <div id="tStatus">
+      <div class="box">
+        <div class="bar">
+          <div><label for="tgl">Tanggal</label><input id="tgl" type="date"></div>
+          <div><label for="fModa">Moda</label>
+            <select id="fModa">
+              <option value="all">Semua moda</option>
+              <option value="bus">Bus AKAP</option>
+              <option value="train">Kereta</option>
+              <option value="shuttle">Travel</option>
+            </select>
+          </div>
+          <div><label for="fCari">Cari kota</label><input id="fCari" type="search" placeholder="mis. Yogyakarta"></div>
+        </div>
+        <p class="hint">Klik <b>Ada</b> atau <b>Habis</b> setelah Anda cek di situs pemesanan. Tombol <b>–</b> mengembalikan ke "Belum dicek". Tersimpan otomatis.</p>
+        <div id="listStatus"></div>
+      </div>
+    </div>
+
+    <!-- Tab: rute -->
+    <div id="tRute" class="hide">
+      <div class="box" style="margin-bottom:1rem">
+        <h2>Tambah rute</h2>
+        <div class="grid g4" style="align-items:end">
+          <div><label for="nModa">Moda</label>
+            <select id="nModa"><option value="bus">Bus AKAP</option><option value="train">Kereta</option><option value="shuttle">Travel</option></select></div>
+          <div><label for="nAsal">Kota asal</label><input id="nAsal" placeholder="Jakarta"></div>
+          <div><label for="nTuju">Kota tujuan</label><input id="nTuju" placeholder="Yogyakarta"></div>
+          <button id="btnTambah" class="btn">Tambah</button>
+        </div>
+      </div>
+      <div class="box">
+        <h2>Daftar rute (<span id="nRute">0</span>)</h2>
+        <div id="listRute"></div>
+      </div>
+    </div>
+
+    <!-- Tab: kota Traveloka -->
+    <div id="tKota" class="hide">
+      <div class="box" style="margin-bottom:1rem">
+        <h2>Ambil ID dari alamat Traveloka</h2>
+        <p class="hint">Di Traveloka (Bus &amp; Travel) cari satu rute sampai muncul daftar tiket, salin seluruh alamat di address bar, tempel di bawah, lalu pilih kota asal dan tujuannya. ID kedua kota tersimpan sekaligus.</p>
+        <div class="grid g3" style="margin-bottom:.75rem">
+          <div><label for="kAsal">Kota asal</label><select id="kAsal"></select></div>
+          <div><label for="kTuju">Kota tujuan</label><select id="kTuju"></select></div>
+          <div><label for="kUrl">Alamat hasil pencarian Traveloka</label><input id="kUrl" placeholder="https://www.traveloka.com/.../search?st=..."></div>
+        </div>
+        <button id="btnKotaUrl" class="btn">Simpan ID kota</button>
+      </div>
+      <div class="box">
+        <h2>Daftar kota (<span id="nKota">0</span>)</h2>
+        <p class="hint">Kota yang ID-nya kosong memakai link Traveloka biasa (bisa terbawa pencarian terakhir pengunjung). Anda juga bisa mengetik ID langsung, mis. <b>a10009843</b>; kosongkan lalu Simpan untuk menghapus.</p>
+        <div id="listKota"></div>
+      </div>
+    </div>
+
+    <!-- Tab: platform lain -->
+    <div id="tPlat" class="hide">
+      <div class="box" style="margin-bottom:1rem">
+        <h2>Ajarkan format link platform</h2>
+        <p class="hint">Di situs platform (Tiket.com, RedBus, Pegipegi, KAI Access) cari satu rute sampai muncul daftar tiket, salin seluruh alamat di address bar dan tempel di bawah. Pilih kota asal/tujuan dan <b>tanggal yang sama</b> dengan yang Anda cari. Sistem mengenali nama kota dan tanggal di alamat itu, lalu memakainya untuk semua rute. Jika alamat memakai kode (mis. <b>GMR</b> atau <b>a123</b>), isi kolom kode persis seperti yang tampak di alamat.</p>
+        <div class="grid g4" style="margin-bottom:.75rem">
+          <div><label for="pPlat">Platform</label><select id="pPlat"></select></div>
+          <div><label for="pAsal">Kota asal</label><select id="pAsal"></select></div>
+          <div><label for="pTuju">Kota tujuan</label><select id="pTuju"></select></div>
+          <div><label for="pTgl">Tanggal yang dicari</label><input id="pTgl" type="date"></div>
+        </div>
+        <div class="grid g3" style="margin-bottom:.75rem">
+          <div><label for="pUrl">Alamat hasil pencarian</label><input id="pUrl" placeholder="https://..."></div>
+          <div><label for="pKA">Kode asal di alamat (opsional)</label><input id="pKA" placeholder="kosongkan jika alamat memakai nama kota"></div>
+          <div><label for="pKT">Kode tujuan di alamat (opsional)</label><input id="pKT" placeholder="kosongkan jika alamat memakai nama kota"></div>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap"><button id="btnPlat" class="btn">Pelajari &amp; simpan</button><button id="btnPlatDel" class="btn ghost hide">Hapus format</button></div>
+        <p id="pFmt" class="hint" style="margin:.9rem 0 0"></p>
+      </div>
+      <div class="box">
+        <h2>Kode kota untuk <span id="nPlat"></span></h2>
+        <p class="hint">Hanya perlu diisi jika platform memakai kode. Setelah format dipelajari, tempel alamat rute lain di atas: kode kota barunya diambil otomatis. Kosong = otomatis dari nama kota (atau link umum bila format memakai kode).</p>
+        <div id="listPlat"></div>
+      </div>
+    </div>
+  </section>
+</div>
+<div id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* PENGATURAN TitikTemu.id (sudah terisi, tidak perlu file config.js lagi) */
+const SUPABASE_URL = "https://xbtbsqoozldrgfatbdka.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_IfFFTnaBj1AmFvj6l6Rq9w_q-ik_Qyd";
+</script>
+<script>
+const $ = id => document.getElementById(id);
+const NAMA_PL = { tv:"Traveloka", tk:"Tiket.com", rb:"RedBus", pg:"Pegipegi", kai:"KAI Access" };
+const PLATFORM_MODA = { bus:["tv","tk","rb","pg"], shuttle:["tv","tk","rb"], train:["kai","tv","tk"] };
+const NAMA_MODA = { bus:"Bus AKAP", train:"Kereta", shuttle:"Travel" };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+
+const sb = (window.supabase && typeof SUPABASE_URL !== "undefined" && !SUPABASE_URL.includes("ISI_"))
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+let RUTE = [];            // [{id, moda, asal, tujuan}]
+let ST = {};              // "ruteId|platform" -> "ada" | "habis"
+let KOTA = {};            // nama kota -> ID kota Traveloka
+let tT;
+function galat(teks) { $("diag").textContent = teks; $("diag").classList.remove("hide"); }
+function aman() { $("diag").classList.add("hide"); }
+function toast(t, bad) {
+  const el = $("toast"); el.textContent = t; el.className = "show" + (bad ? " bad" : "");
+  clearTimeout(tT); tT = setTimeout(() => el.className = "", 2200);
+}
+
+/* ---------- login ---------- */
+function tampil(login) { $("vLogin").classList.toggle("hide", !login); $("vApp").classList.toggle("hide", login); }
+
+async function cekSesi() {
+  if (!sb) { tampil(true); $("loginErr").textContent = "Isi SUPABASE_URL dan SUPABASE_ANON_KEY di bagian PENGATURAN pada file ini dulu."; $("btnLogin").disabled = true; return; }
+  const { data } = await sb.auth.getSession();
+  if (data.session) masuk(data.session.user); else tampil(true);
+}
+
+$("btnLogin").addEventListener("click", async () => {
+  $("loginErr").textContent = ""; $("btnLogin").disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email: $("em").value.trim(), password: $("pw").value });
+  $("btnLogin").disabled = false;
+  if (error) { $("loginErr").textContent = "Email atau kata sandi salah."; return; }
+  $("pw").value = ""; masuk(data.user);
+});
+$("pw").addEventListener("keydown", e => { if (e.key === "Enter") $("btnLogin").click(); });
+$("btnOut").addEventListener("click", async () => { await sb.auth.signOut(); tampil(true); });
+
+async function masuk(user) {
+  $("who").textContent = user.email; tampil(false);
+  $("tgl").value = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+  $("pTgl").value = $("tgl").value;
+  await muatRute(); await muatKota(); await muatPlatform(); await muatStatus(); gambarStatus();
+}
+
+/* ---------- data ---------- */
+async function muatRute() {
+  const { data, error } = await sb.from("rute").select("id,moda,asal,tujuan").order("id");
+  if (error) { console.error(error); galat("Gagal memuat tabel rute. Alasan dari Supabase: " + (error.message || error.code || "tidak diketahui")); return; }
+  aman(); RUTE = data; gambarRute();
+}
+async function muatStatus() {
+  ST = {};
+  if (!$("tgl").value) return;
+  const { data, error } = await sb.from("status").select("rute_id,platform,status").eq("tanggal", $("tgl").value);
+  if (error) { console.error(error); galat("Gagal memuat tabel status. Alasan dari Supabase: " + (error.message || error.code || "tidak diketahui")); return; }
+  data.forEach(x => { ST[x.rute_id + "|" + x.platform] = x.status; });
+}
+
+async function setStatus(ruteId, platform, nilai) {
+  const tgl = $("tgl").value; if (!tgl) { toast("Pilih tanggal dulu", true); return; }
+  let error;
+  if (nilai === "none") {
+    ({ error } = await sb.from("status").delete().eq("rute_id", ruteId).eq("tanggal", tgl).eq("platform", platform));
+  } else {
+    ({ error } = await sb.from("status").upsert(
+      { rute_id: ruteId, tanggal: tgl, platform, status: nilai, dicek_pada: new Date().toISOString() },
+      { onConflict: "rute_id,tanggal,platform" }));
+  }
+  if (error) { console.error(error); galat("Gagal menyimpan. Alasan dari Supabase: " + (error.message || error.code || "tidak diketahui")); toast("Gagal menyimpan", true); return; }
+  aman();
+  if (nilai === "none") delete ST[ruteId + "|" + platform]; else ST[ruteId + "|" + platform] = nilai;
+  tandai(ruteId, platform, nilai); toast("Tersimpan");
+}
+
+/* ---------- tampilan: status ---------- */
+function tandai(ruteId, platform, nilai) {
+  const kls = { ada: "on-ada", habis: "on-habis", none: "on-none" };
+  document.querySelectorAll('#listStatus button[data-r="' + ruteId + '"][data-p="' + platform + '"]').forEach(b => {
+    const on = b.dataset.v === nilai;
+    b.className = on ? kls[b.dataset.v] : "";
+    b.setAttribute("aria-pressed", on);
+  });
+}
+function gambarStatus() {
+  const y = window.scrollY;
+  const m = $("fModa").value, q = $("fCari").value.trim().toLowerCase();
+  const hasil = RUTE.filter(r => (m === "all" || r.moda === m) && (!q || (r.asal + " " + r.tujuan).toLowerCase().includes(q)));
+  $("listStatus").innerHTML = hasil.length ? hasil.map(r => {
+    const pls = PLATFORM_MODA[r.moda].map(p => {
+      const v = ST[r.id + "|" + p] || "none";
+      const b = (val, lbl, cls) => `<button data-r="${r.id}" data-p="${p}" data-v="${val}" class="${v === val ? cls : ""}" aria-pressed="${v === val}">${lbl}</button>`;
+      return `<div class="pl"><b>${NAMA_PL[p]}</b><div class="seg3">${b("ada", "Ada", "on-ada")}${b("habis", "Habis", "on-habis")}${b("none", "–", "on-none")}</div></div>`;
+    }).join("");
+    return `<div class="row"><div class="rt">${esc(r.asal)} → ${esc(r.tujuan)}<small>${NAMA_MODA[r.moda]}</small></div><div class="plats">${pls}</div></div>`;
+  }).join("") : '<p class="hint">Tidak ada rute yang cocok.</p>';
+  window.scrollTo(0, y);
+}
+$("listStatus").addEventListener("click", e => {
+  const b = e.target.closest("button[data-r]"); if (!b) return;
+  setStatus(Number(b.dataset.r), b.dataset.p, b.dataset.v);
+});
+$("tgl").addEventListener("change", async () => { await muatStatus(); gambarStatus(); });
+$("fModa").addEventListener("change", gambarStatus);
+$("fCari").addEventListener("input", gambarStatus);
+
+/* ---------- tampilan: rute ---------- */
+function gambarRute() {
+  $("nRute").textContent = RUTE.length;
+  $("listRute").innerHTML = RUTE.map(r =>
+    `<div class="row"><div class="rt">${esc(r.asal)} → ${esc(r.tujuan)}<small>${NAMA_MODA[r.moda]}</small></div><button class="btn ghost small" data-del="${r.id}">Hapus</button></div>`).join("");
+  gambarStatus(); gambarKota(); gambarPlat();
+}
+$("btnTambah").addEventListener("click", async () => {
+  const asal = $("nAsal").value.trim(), tujuan = $("nTuju").value.trim(), moda = $("nModa").value;
+  if (!asal || !tujuan) { toast("Isi kota asal dan tujuan", true); return; }
+  const { error } = await sb.from("rute").insert({ moda, asal, tujuan });
+  if (error) { toast(error.code === "23505" ? "Rute itu sudah ada" : "Gagal menambah rute", true); return; }
+  $("nAsal").value = ""; $("nTuju").value = ""; await muatRute(); toast("Rute ditambahkan");
+});
+$("listRute").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-del]"); if (!b) return;
+  const r = RUTE.find(x => x.id === Number(b.dataset.del));
+  if (!confirm(`Hapus rute ${r.asal} → ${r.tujuan}? Status yang tersimpan untuk rute ini ikut terhapus.`)) return;
+  const { error } = await sb.from("rute").delete().eq("id", r.id);
+  if (error) { toast("Gagal menghapus rute", true); return; }
+  await muatRute(); await muatStatus(); gambarStatus(); toast("Rute dihapus");
+});
+
+/* ---------- kota Traveloka ---------- */
+async function muatKota() {
+  const { data, error } = await sb.from("kota").select("nama,tv_id");
+  if (error) { console.error(error); galat("Tabel kota belum siap. Jalankan file supabase_kota.sql di Supabase (SQL Editor) dulu. Alasan: " + (error.message || error.code || "tidak diketahui")); KOTA = {}; gambarKota(); return; }
+  KOTA = {}; data.forEach(x => { KOTA[x.nama] = x.tv_id; }); gambarKota();
+}
+const daftarKota = () => [...new Set(RUTE.flatMap(r => [r.asal, r.tujuan]))].sort((a, b) => a.localeCompare(b, "id"));
+function gambarKota() {
+  const ks = daftarKota();
+  $("nKota").textContent = ks.length;
+  const opsi = ks.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join("");
+  const a = $("kAsal").value, t = $("kTuju").value;
+  $("kAsal").innerHTML = opsi; $("kTuju").innerHTML = opsi;
+  if (ks.includes(a)) $("kAsal").value = a;
+  if (ks.includes(t)) $("kTuju").value = t; else if (ks.length > 1) $("kTuju").selectedIndex = 1;
+  $("listKota").innerHTML = ks.length ? ks.map(k => `<div class="row"><div class="rt">${esc(k)}<small>${KOTA[k] ? "ID Traveloka terisi" : "Belum diisi"}</small></div>
+    <div style="display:flex;gap:.5rem;align-items:center"><input data-kid="${esc(k)}" value="${esc(KOTA[k] || "")}" placeholder="a10009843" style="width:150px" aria-label="ID Traveloka ${esc(k)}"><button class="btn ghost small" data-ksave="${esc(k)}">Simpan</button></div></div>`).join("")
+    : '<p class="hint">Belum ada rute. Tambah rute dulu di tab Kelola rute.</p>';
+}
+const IDK = /^[a-z]\d+$/i;
+async function simpanKota(nama, id) {
+  id = id.trim();
+  let error;
+  if (!id) ({ error } = await sb.from("kota").delete().eq("nama", nama));
+  else {
+    if (!IDK.test(id)) { toast("Format ID tidak dikenal (contoh: a10009843)", true); return false; }
+    ({ error } = await sb.from("kota").upsert({ nama, tv_id: id, diubah_pada: new Date().toISOString() }, { onConflict: "nama" }));
+  }
+  if (error) { console.error(error); galat("Gagal menyimpan kota. Alasan dari Supabase: " + (error.message || error.code || "tidak diketahui")); toast("Gagal menyimpan", true); return false; }
+  aman(); if (id) KOTA[nama] = id; else delete KOTA[nama];
+  return true;
+}
+$("listKota").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-ksave]"); if (!b) return;
+  const nama = b.dataset.ksave, inp = [...document.querySelectorAll("#listKota input[data-kid]")].find(i => i.dataset.kid === nama);
+  if (await simpanKota(nama, inp.value)) { gambarKota(); toast("Tersimpan"); }
+});
+$("btnKotaUrl").addEventListener("click", async () => {
+  const asal = $("kAsal").value, tuju = $("kTuju").value;
+  if (!asal || !tuju || asal === tuju) { toast("Pilih dua kota yang berbeda", true); return; }
+  let u; try { u = new URL($("kUrl").value.trim()); } catch (_) { toast("Alamat tidak valid, salin utuh dari browser", true); return; }
+  const st = (u.searchParams.get("st") || "").split("."), stt = u.searchParams.get("stt") || "";
+  if (st.length !== 2 || !IDK.test(st[0]) || !IDK.test(st[1])) { toast("Alamat ini bukan hasil pencarian bus Traveloka (tidak ada st=)", true); return; }
+  if (stt && stt !== "CITY_GEO.CITY_GEO") { toast("Pencarian itu memakai titik non-kota (terminal/area). Cari antar kota saja", true); return; }
+  if (!(await simpanKota(asal, st[0])) || !(await simpanKota(tuju, st[1]))) return;
+  $("kUrl").value = ""; gambarKota(); toast(`Tersimpan: ${asal} & ${tuju}`);
+});
+
+/* ---------- platform lain (format link dipelajari dari alamat) ---------- */
+const TRF = { raw:s=>s, enc:encodeURIComponent, plus:s=>encodeURIComponent(s).replace(/%20/g,"+"), slug:s=>s.trim().toLowerCase().replace(/\s+/g,"-"), low:s=>encodeURIComponent(s.toLowerCase()), usc:s=>s.trim().toLowerCase().replace(/\s+/g,"_") };
+const JENIS = ["raw", "enc", "plus", "slug", "low", "usc"];
+const PLAIN = Object.keys(NAMA_PL).filter(p => p !== "tv");
+let PLT = {}, PLK = {};   // PLT[platform]=template ; PLK[platform][kota]=kode
+$("pPlat").innerHTML = PLAIN.map(p => `<option value="${p}">${NAMA_PL[p]}</option>`).join("");
+
+async function muatPlatform() {
+  const a = await sb.from("platform_link").select("platform,template");
+  const b = await sb.from("kota_platform").select("nama,platform,kode");
+  if (a.error || b.error) { const e = a.error || b.error; console.error(e); galat("Tabel platform belum siap. Jalankan file supabase_platform.sql di Supabase (SQL Editor) dulu. Alasan: " + (e.message || e.code || "tidak diketahui")); return; }
+  PLT = {}; PLK = {};
+  a.data.forEach(x => { PLT[x.platform] = x.template; });
+  b.data.forEach(x => { (PLK[x.platform] = PLK[x.platform] || {})[x.nama] = x.kode; });
+  gambarPlat();
+}
+function gambarPlat() {
+  const p = $("pPlat").value, ks = daftarKota(), kd = PLK[p] || {};
+  const opsi = ks.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join("");
+  const a = $("pAsal").value, t = $("pTuju").value;
+  $("pAsal").innerHTML = opsi; $("pTuju").innerHTML = opsi;
+  if (ks.includes(a)) $("pAsal").value = a;
+  if (ks.includes(t)) $("pTuju").value = t; else if (ks.length > 1) $("pTuju").selectedIndex = 1;
+  $("pFmt").innerHTML = PLT[p] ? "Format tersimpan: <code>" + esc(PLT[p]) + "</code>" : "Belum ada format untuk " + esc(NAMA_PL[p]) + ". Tombol memakai link umum.";
+  $("btnPlatDel").classList.toggle("hide", !PLT[p]);
+  $("nPlat").textContent = NAMA_PL[p];
+  $("listPlat").innerHTML = ks.length ? ks.map(k => `<div class="row"><div class="rt">${esc(k)}<small>${kd[k] ? "Kode terisi" : "Otomatis / belum diisi"}</small></div>
+    <div style="display:flex;gap:.5rem;align-items:center"><input data-pk="${esc(k)}" value="${esc(kd[k] || "")}" style="width:150px" aria-label="Kode ${esc(k)}"><button class="btn ghost small" data-psave="${esc(k)}">Simpan</button></div></div>`).join("")
+    : '<p class="hint">Belum ada rute. Tambah rute dulu di tab Kelola rute.</p>';
+}
+async function simpanKodePlat(p, nama, kode) {
+  kode = kode.trim(); let error;
+  if (!kode) ({ error } = await sb.from("kota_platform").delete().eq("nama", nama).eq("platform", p));
+  else ({ error } = await sb.from("kota_platform").upsert({ nama, platform: p, kode, diubah_pada: new Date().toISOString() }, { onConflict: "nama,platform" }));
+  if (error) { console.error(error); galat("Gagal menyimpan kode. Alasan dari Supabase: " + (error.message || error.code || "tidak diketahui")); toast("Gagal menyimpan", true); return false; }
+  aman(); PLK[p] = PLK[p] || {}; if (kode) PLK[p][nama] = kode; else delete PLK[p][nama];
+  return true;
+}
+/* cari nama/kode kota di dalam alamat */
+function deteksi(u, nama, manual) {
+  if (manual) return u.includes(manual) ? { tok: manual, jenis: "code" } : null;
+  for (const j of JENIS) { const t = TRF[j](nama); if (t && u.includes(t)) return { tok: t, jenis: j }; }
+  return null;
+}
+/* cari tanggal di dalam alamat, ganti dengan penanda */
+function gantiTanggal(u, v) {
+  const [y, m, d] = v.split("-");
+  const cand = [[`${y}-${m}-${d}`, "{y}-{m}-{d}"], [`${d}-${m}-${y}`, "{d}-{m}-{y}"], [`${d}/${m}/${y}`, "{d}/{m}/{y}"], [`${d}%2F${m}%2F${y}`, "{d}%2F{m}%2F{y}"],
+    [`${y}${m}${d}`, "{y}{m}{d}"], [`${d}${m}${y}`, "{d}{m}{y}"], [`${y}-${+m}-${+d}`, "{y}-{m1}-{d1}"], [`${+d}-${+m}-${y}`, "{d1}-{m1}-{y}"]];
+  for (const [lit, ph] of cand) if (u.includes(lit)) return { u: u.split(lit).join(ph), ok: true };
+  return { u, ok: false };
+}
+/* jika format sudah ada & alamat cocok: ambil kode kota dari alamat */
+function cocokkan(tpl, url) {
+  const nama = [];
+  const re = new RegExp("^" + tpl.replace(/[.*+?^$()|[\]\\]/g, "\\$&")
+    .replace(/\{(asal|tujuan):(\w+)\}/g, (_, w, j) => { nama.push([w, j]); return "([^&/?#]+?)"; })
+    .replace(/\{[ymd]1?\}/g, "[^&/?#]+?") + "$");
+  const m = url.match(re); if (!m) return null;
+  const out = {}; nama.forEach(([w, j], i) => { if (j === "code" && !(w in out)) out[w] = m[i + 1]; });
+  return out;
+}
+$("btnPlat").addEventListener("click", async () => {
+  const p = $("pPlat").value, asal = $("pAsal").value, tuju = $("pTuju").value, raw = $("pUrl").value.trim(), tg = $("pTgl").value;
+  if (!asal || !tuju || asal === tuju) { toast("Pilih dua kota yang berbeda", true); return; }
+  if (!tg) { toast("Isi tanggal yang dicari", true); return; }
+  try { new URL(raw); } catch (_) { toast("Alamat tidak valid, salin utuh dari browser", true); return; }
+  // 1) format sudah ada dan alamat cocok -> simpan kode kota saja
+  const ada = PLT[p] ? cocokkan(PLT[p], raw) : null;
+  if (ada && Object.keys(ada).length) {
+    for (const [w, kode] of Object.entries(ada)) if (!(await simpanKodePlat(p, w === "asal" ? asal : tuju, kode))) return;
+    $("pUrl").value = ""; gambarPlat(); toast("Kode kota tersimpan"); return;
+  }
+  // 2) pelajari format baru
+  const A = deteksi(raw, asal, $("pKA").value.trim()), T = deteksi(raw, tuju, $("pKT").value.trim());
+  if (!A || !T) { toast(`${!A ? asal : tuju} tidak ditemukan di alamat. Isi kolom kode sesuai yang tampak di alamat`, true); return; }
+  let u = raw;
+  [[A, "asal"], [T, "tujuan"]].sort((x, y) => y[0].tok.length - x[0].tok.length)
+    .forEach(([o, w]) => { u = u.split(o.tok).join("\u0001" + w + ":" + o.jenis + "\u0002"); });
+  const tgl = gantiTanggal(u, tg); u = tgl.u.replace(/\u0001(.+?)\u0002/g, "{$1}");
+  const { error } = await sb.from("platform_link").upsert({ platform: p, template: u, diubah_pada: new Date().toISOString() }, { onConflict: "platform" });
+  if (error) { console.error(error); galat("Gagal menyimpan format. Alasan dari Supabase: " + (error.message || error.code || "tidak diketahui")); toast("Gagal menyimpan", true); return; }
+  aman(); PLT[p] = u;
+  if (A.jenis === "code" && !(await simpanKodePlat(p, asal, A.tok))) return;
+  if (T.jenis === "code" && !(await simpanKodePlat(p, tuju, T.tok))) return;
+  $("pUrl").value = ""; $("pKA").value = ""; $("pKT").value = ""; gambarPlat();
+  toast(tgl.ok ? "Format tersimpan" : "Tersimpan, tapi tanggal tidak ditemukan di alamat (link tidak mengikuti tanggal)", !tgl.ok);
+});
+$("btnPlatDel").addEventListener("click", async () => {
+  const p = $("pPlat").value; if (!confirm("Hapus format link " + NAMA_PL[p] + "? Tombolnya kembali ke link umum.")) return;
+  const { error } = await sb.from("platform_link").delete().eq("platform", p);
+  if (error) { toast("Gagal menghapus", true); return; }
+  delete PLT[p]; gambarPlat(); toast("Format dihapus");
+});
+$("pPlat").addEventListener("change", gambarPlat);
+$("listPlat").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-psave]"); if (!b) return;
+  const nama = b.dataset.psave, inp = [...document.querySelectorAll("#listPlat input[data-pk]")].find(i => i.dataset.pk === nama);
+  if (await simpanKodePlat($("pPlat").value, nama, inp.value)) { gambarPlat(); toast("Tersimpan"); }
+});
+
+/* ---------- tab ---------- */
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("on", x === t));
+  $("tStatus").classList.toggle("hide", t.dataset.t !== "status");
+  $("tRute").classList.toggle("hide", t.dataset.t !== "rute");
+  $("tKota").classList.toggle("hide", t.dataset.t !== "kota");
+  $("tPlat").classList.toggle("hide", t.dataset.t !== "plat");
+}));
+
+cekSesi();
+</script>
+</body>
+</html>
